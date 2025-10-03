@@ -1,0 +1,17 @@
+[project]
+name = "sinasc-research"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ipywidgets>=8.1.7",
+    "notebook>=7.4.7",
+    "pandarallel>=1.6.5",
+    "pandas>=2.3.3",
+    "plotly>=6.3.0",
+    "pyarrow>=21.0.0",
+    "pygrowthstandards>=0.1.2",
+    "seaborn>=0.13.2",
+    "tqdm>=4.67.1",
+]
