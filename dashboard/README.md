@@ -60,27 +60,27 @@ A modern, interactive web dashboard for analyzing Brazilian perinatal health dat
 dashboard/
 ├── README.md                 # This file
 ├── ARCHITECTURE.md           # Detailed architecture documentation
+├── QUICKSTART.md             # Quick start guide
+├── STRUCTURE.md              # Page structure documentation
+├── DESIGN_SYSTEM.md          # UI/UX design system
 ├── app.py                    # Main Dash application
 ├── pages/                    # Multi-page app structure
-│   ├── home.py              # Overview/landing page
-│   ├── timeline.py          # Temporal analysis
-│   ├── geographic.py        # Maps and regional analysis
-│   └── insights.py          # Deep-dive analytics
+│   ├── __init__.py          # Page exports
+│   ├── home.py              # Multi-year overview (landing page)
+│   ├── annual.py            # Single-year detailed analysis
+│   └── GEOGRAPHIC_PLANNING.md # Future geographic features
 ├── components/               # Reusable UI components
-│   ├── filters.py           # Filter controls
-│   ├── cards.py             # Metric cards
-│   ├── charts.py            # Chart components
-│   └── maps.py              # Map components
+│   ├── __init__.py          # Component exports
+│   └── charts.py            # Chart generation utilities
 ├── data/                     # Data processing utilities
-│   ├── loader.py            # Efficient data loading
-│   ├── aggregator.py        # Pre-aggregation for web
-│   └── cache.py             # Caching strategies
-├── assets/                   # Static files
-│   ├── styles.css           # Custom CSS
-│   └── logo.png             # Branding
+│   ├── __init__.py          # Data exports
+│   └── loader.py            # DataLoader with LRU caching
 ├── config/                   # Configuration files
-│   ├── settings.py          # App settings
-│   └── constants.py         # Constants and mappings
+│   ├── __init__.py          # Config exports
+│   ├── settings.py          # App settings, colors, layout configs
+│   └── constants.py         # Brazilian states, labels, mappings
+├── assets/                   # Static files
+│   └── custom.css           # Custom CSS styles
 └── requirements.txt          # Python dependencies
 ```
 
@@ -325,32 +325,20 @@ This is a portfolio project, but suggestions are welcome!
 
 ## 🔮 Future Enhancements
 
-### Phase 2 Features
-- [ ] Machine learning predictions (birth weight, preterm risk)
-- [ ] Advanced statistical tests
+### Planned Features
+- [ ] **Temporal Analysis Page**: Time-series trends and seasonal patterns
+- [ ] **Geographic Analysis Page**: Choropleth maps by state and municipality
+- [ ] **Insights Page**: Deep-dive correlations and statistical analysis
 - [ ] Downloadable reports (PDF/Excel)
-- [ ] User accounts for saved filters
-- [ ] Real-time data updates (when available)
-- [ ] Mobile app version
-- [ ] API for data access
-- [ ] Integration with other health datasets
-
-### Visualization Ideas
-- Animated temporal maps
-- 3D surface plots for multi-variable analysis
-- Sankey diagrams for patient flow
-- Network graphs for regional connections
-- Heatmaps for correlation analysis
+- [ ] Advanced filtering and cross-page state management
 
 ---
 
 ## 📞 Contact & Links
 
-- **GitHub Repository**: [sinasc-dashboard](https://github.com/Yannngn/sinasc-dashboard)
-- **Live Demo**: [To be deployed]
-- **Portfolio**: [Your portfolio link]
-- **LinkedIn**: [Your LinkedIn]
+- **GitHub Repository**: [sinasc_research](https://github.com/Yannngn/sinasc_research)
+- **Author**: [Yannngn](https://github.com/Yannngn)
 
 ---
 
-*Last Updated: October 3, 2025*
+*Last Updated: January 2025*

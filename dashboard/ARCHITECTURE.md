@@ -95,35 +95,13 @@ User selects multiple years
 ### File Structure
 ```
 dashboard_data/
-├── metadata.json                        # Years, record counts, schema info
-├── aggregates/                          # Pre-computed aggregates
-│   ├── yearly.parquet                  # All years combined (5 years: 2019-2024)
-│   ├── combined_yearly.parquet         # Legacy support
-│   ├── monthly_2019.parquet            # Monthly aggregates by year
-│   ├── monthly_2020.parquet
-│   ├── monthly_2021.parquet
-│   ├── monthly_2022.parquet
-│   ├── monthly_2023.parquet
-│   ├── monthly_2024.parquet
-│   ├── state_2019.parquet              # State-level aggregates
-│   ├── state_2020.parquet
-│   ├── state_2021.parquet
-│   ├── state_2022.parquet
-│   ├── state_2023.parquet
-│   ├── state_2024.parquet
-│   ├── municipality_2019.parquet       # Municipality aggregates
-│   ├── municipality_2020.parquet
-│   ├── municipality_2021.parquet
-│   ├── municipality_2022.parquet
-│   ├── municipality_2023.parquet
-│   └── municipality_2024.parquet
+├── metadata.json                   # Years, record counts, schema info
+├── yearly.parquet                  # 5-year summary (12.5KB)
+├── monthly_YYYY.parquet           # Monthly aggregates per year
+├── state_YYYY.parquet             # State-level aggregates per year
+├── municipality_YYYY.parquet      # Municipality aggregates per year
 └── years/
-    ├── 2019_essential.parquet          # Essential columns only
-    ├── 2020_essential.parquet
-    ├── 2021_essential.parquet
-    ├── 2022_essential.parquet
-    ├── 2023_essential.parquet
-    └── 2024_essential.parquet
+    └── YYYY_essential.parquet     # Essential columns for each year
 ```
 
 ### Data Optimization
@@ -236,101 +214,26 @@ dcc.Store(
 ### Page Structure
 
 #### Home Page (`pages/home.py`)
-```python
-layout = dbc.Container([
-    # Hero section with key metrics
-    dbc.Row([
-        dbc.Col([metric_card('Total Births', total_births)], width=3),
-        dbc.Col([metric_card('Cesarean Rate', cesarean_rate)], width=3),
-        dbc.Col([metric_card('Avg Maternal Age', avg_age)], width=3),
-        dbc.Col([metric_card('Avg Birth Weight', avg_weight)], width=3),
-    ]),
-    
-    # Primary visualization
-    dbc.Row([
-        dbc.Col([
-            dcc.Graph(id='yearly-trend-chart')
-        ])
-    ]),
-    
-    # Secondary visualizations
-    dbc.Row([
-        dbc.Col([dcc.Graph(id='delivery-type-pie')], width=6),
-        dbc.Col([dcc.Graph(id='maternal-age-hist')], width=6),
-    ]),
-])
-```
+Multi-year overview with:
+- Year summary cards (last 3 years by default)
+- Birth evolution chart across years
+- Cesarean rate comparison
+- Preterm births analysis (stacked bars + line charts)
+- Adolescent pregnancy analysis (stacked bars + line charts)
+- Brazilian number formatting throughout
 
-#### Timeline Page (`pages/timeline.py`)
-```python
-layout = dbc.Container([
-    # Filter controls
-    dbc.Row([
-        dbc.Col([
-            html.Label('Date Range'),
-            dcc.RangeSlider(
-                id='date-range-slider',
-                min=2010,
-                max=2024,
-                value=[2020, 2024],
-                marks={i: str(i) for i in range(2010, 2025)},
-            )
-        ])
-    ]),
-    
-    # Timeline visualization
-    dbc.Row([
-        dbc.Col([
-            dcc.Graph(id='timeline-chart', config={'displayModeBar': False})
-        ])
-    ]),
-    
-    # Data table with pagination
-    dbc.Row([
-        dbc.Col([
-            dash_table.DataTable(
-                id='timeline-table',
-                page_size=50,
-                page_action='custom',  # Server-side pagination
-            )
-        ])
-    ]),
-])
-```
+#### Annual Analysis Page (`pages/annual.py`)
+Single-year detailed view with:
+- Year selector dropdown
+- Dynamic metric cards (births, age, weight, cesarean rate)
+- Monthly births timeline
+- Delivery type distribution (donut chart)
+- Maternal age distribution (histogram)
 
-#### Geographic Page (`pages/geographic.py`)
-```python
-layout = dbc.Container([
-    # Map controls
-    dbc.Row([
-        dbc.Col([
-            dcc.Dropdown(
-                id='map-metric-dropdown',
-                options=[
-                    {'label': 'Total Births', 'value': 'total_births'},
-                    {'label': 'Cesarean Rate', 'value': 'cesarean_rate'},
-                    {'label': 'Maternal Mortality', 'value': 'mortality'},
-                ],
-                value='total_births'
-            )
-        ], width=6),
-    ]),
-    
-    # Choropleth map
-    dbc.Row([
-        dbc.Col([
-            dcc.Graph(id='brazil-map', style={'height': '600px'})
-        ])
-    ]),
-    
-    # Regional comparison
-    dbc.Row([
-        dbc.Col([
-            dcc.Graph(id='regional-comparison-bar')
-        ])
-    ]),
-])
-```
+#### Planned Pages
+- **Temporal Analysis**: Time-series trends (not yet implemented)
+- **Geographic Analysis**: Choropleth maps (not yet implemented)
+- **Insights**: Correlations and statistics (not yet implemented)
 
 ---
 
@@ -644,13 +547,11 @@ def test_filter_callback(dash_duo):
 - **User authentication**: Saved dashboards, custom views
 - **API endpoints**: RESTful API for data access
 
-### Technical Debt
-- Implement proper logging system
+### Technical Improvements
 - Add comprehensive test coverage
 - Set up CI/CD pipeline
-- Optimize database queries
-- Add monitoring/alerting
+- Add monitoring/alerting for production
 
 ---
 
-*Last Updated: October 3, 2025*
+*Last Updated: January 2025*

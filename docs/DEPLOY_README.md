@@ -76,24 +76,7 @@ gunicorn app:server --bind 0.0.0.0:8050 --workers 2
 
 ---
 
-## 📊 Deployment Details
 
-### Python Version
-- **Local**: Python 3.13.7 (from UV)
-- **Deployment**: Python 3.12.7 (platform compatibility)
-- **All packages work on both versions** ✅
-
-### Memory Usage
-- Data: ~532KB (excellent!)
-- Estimated RAM: <200MB
-- Free tier: 512MB (plenty of headroom)
-
-### Performance
-- Cold start: ~10s (first request)
-- Warm requests: <100ms
-- Concurrent users: ~50 on free tier
-
----
 
 ## 🔒 Security Checklist
 
@@ -106,42 +89,32 @@ Before going live:
 
 ---
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
-### Build fails with "Module not found"
+**Build fails:**
 - Check `dashboard/requirements.txt` has all dependencies
-- Verify package names are correct
 - Try: `uv pip freeze > dashboard/requirements.txt`
 
-### App crashes with memory error
-- Your data is only 532KB, should be fine
-- Check if loading too much data at startup
-- Reduce workers: change `--workers 2` to `--workers 1`
+**Memory error:**
+- Reduce workers: `--workers 1` instead of `--workers 2`
 
-### Slow responses
-- First request after sleep is slow (free tier)
-- Subsequent requests are fast
-- Upgrade to paid tier ($7/month) for no sleep
+**Slow first request:**
+- Free tier sleeps after inactivity
+- First request takes ~10s, then fast
 
 ---
 
-## 🎓 Next Steps
+## Next Steps
 
-1. **Test locally**: `cd dashboard && gunicorn app:server`
-2. **Push to GitHub**: `git push`
-3. **Deploy to Render**: Follow steps above
-4. **Share your dashboard**: Get the URL and share!
+1. Test locally: `cd dashboard && gunicorn app:server`
+2. Push to GitHub
+3. Deploy to Render
+4. Share your dashboard!
 
 ---
 
-## 📚 Additional Resources
+## Resources
 
-- [Render.com Docs](https://render.com/docs)
-- [Railway.app Docs](https://docs.railway.app)
-- [Dash Deployment Guide](https://dash.plotly.com/deployment)
 - [Full Deployment Guide](./DEPLOYMENT_GUIDE.md)
-- [Python 3.13 Compatibility](./PYTHON_313_COMPATIBILITY.md)
-
----
-
-**Questions?** Check DEPLOYMENT_GUIDE.md for detailed information!
+- [Render.com Docs](https://render.com/docs)
+- [Dash Deployment](https://dash.plotly.com/deployment)
