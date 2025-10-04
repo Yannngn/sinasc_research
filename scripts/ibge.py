@@ -19,7 +19,10 @@ def _request(outpath: str = "data/ibge/municipalities.json"):
     print(f"✅ Saved raw API response to {outpath}")
 
 
-def main(json_path: str = "data/ibge/municipalities.json", csv_path: str = "data/ibge/municipalities_flat.csv"):
+def main(
+    json_path: str = "data/ibge/municipalities.json",
+    csv_path: str = "data/ibge/municipalities_flat.csv",
+):
     print("🌐 Fetching municipality data from IBGE API...")
     if not os.path.exists(json_path):
         _request(outpath=json_path)
@@ -31,7 +34,12 @@ def main(json_path: str = "data/ibge/municipalities.json", csv_path: str = "data
         header = "id,nome,microrregiao_id,microrregiao_nome,mesorregiao_id,mesorregiao_nome,uf_id,uf_sigla,uf_nome,regiao_id,regiao_sigla,regiao_nome,regiao_imediata_id,regiao_imediata_nome,regiao_intermediaria_id,regiao_intermediaria_nome\n"
         f.write(header)
 
-        runner = tqdm(municipalities, total=len(municipalities), desc="Processing municipalities", unit="mun")
+        runner = tqdm(
+            municipalities,
+            total=len(municipalities),
+            desc="Processing municipalities",
+            unit="mun",
+        )
         for m in municipalities:
             runner.desc = f"Processing {m['nome']}"
 

@@ -224,7 +224,14 @@ def create_stacked_bar_chart(
 
 
 def create_multi_line_chart(
-    df, x_col: str, y_cols: list, labels: list, colors: list, x_title: str, y_title: str, reference_line: dict | None = None
+    df,
+    x_col: str,
+    y_cols: list,
+    labels: list,
+    colors: list,
+    x_title: str,
+    y_title: str,
+    reference_line: dict | None = None,
 ) -> go.Figure:
     """
     Create a chart with multiple line traces.

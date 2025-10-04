@@ -39,7 +39,10 @@ def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
 
     return dbc.Card(
         [
-            dbc.CardHeader(html.H3(f"📅 {year}", className="mb-0 text-center fw-bold"), className="bg-primary text-white py-3"),
+            dbc.CardHeader(
+                html.H3(f"📅 {year}", className="mb-0 text-center fw-bold"),
+                className="bg-primary text-white py-3",
+            ),
             dbc.CardBody(
                 [
                     # Total births - destacado
@@ -60,30 +63,48 @@ def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
                                     # Low birth weight rate
                                     html.Div(
                                         [
-                                            html.I(className="fas fa-weight-hanging text-warning me-1", style={"fontSize": "14px"}),
+                                            html.I(
+                                                className="fas fa-weight-hanging text-warning me-1",
+                                                style={"fontSize": "14px"},
+                                            ),
                                             html.Strong("Baixo Peso: ", className="small"),
                                             html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(f"{low_birth_weight_rate:.1f}%".replace(".", ","), className="small text-muted"),
+                                            html.Span(
+                                                f"{low_birth_weight_rate:.1f}%".replace(".", ","),
+                                                className="small text-muted",
+                                            ),
                                         ],
                                         className="mb-2 d-flex align-items-center",
                                     ),
                                     # Adolescent pregnancy rate
                                     html.Div(
                                         [
-                                            html.I(className="fas fa-user-friends text-info me-1", style={"fontSize": "14px"}),
+                                            html.I(
+                                                className="fas fa-user-friends text-info me-1",
+                                                style={"fontSize": "14px"},
+                                            ),
                                             html.Strong("Adolescentes: ", className="small"),
                                             html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(f"{adolescent_pregnancy_rate:.1f}%".replace(".", ","), className="small text-muted"),
+                                            html.Span(
+                                                f"{adolescent_pregnancy_rate:.1f}%".replace(".", ","),
+                                                className="small text-muted",
+                                            ),
                                         ],
                                         className="mb-2 d-flex align-items-center",
                                     ),
                                     # Low APGAR5 rate
                                     html.Div(
                                         [
-                                            html.I(className="fas fa-heartbeat text-danger me-1", style={"fontSize": "14px"}),
+                                            html.I(
+                                                className="fas fa-heartbeat text-danger me-1",
+                                                style={"fontSize": "14px"},
+                                            ),
                                             html.Strong("APGAR5 Baixo: ", className="small"),
                                             html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(f"{low_apgar5_rate:.1f}%".replace(".", ","), className="small text-muted"),
+                                            html.Span(
+                                                f"{low_apgar5_rate:.1f}%".replace(".", ","),
+                                                className="small text-muted",
+                                            ),
                                         ],
                                         className="mb-0 d-flex align-items-center",
                                     ),
@@ -96,30 +117,48 @@ def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
                                     # Cesarean rate
                                     html.Div(
                                         [
-                                            html.I(className="fas fa-procedures text-warning me-1", style={"fontSize": "14px"}),
+                                            html.I(
+                                                className="fas fa-procedures text-warning me-1",
+                                                style={"fontSize": "14px"},
+                                            ),
                                             html.Strong("Cesárea: ", className="small"),
                                             html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(f"{cesarean_rate:.1f}%".replace(".", ","), className="small text-muted"),
+                                            html.Span(
+                                                f"{cesarean_rate:.1f}%".replace(".", ","),
+                                                className="small text-muted",
+                                            ),
                                         ],
                                         className="mb-2 d-flex align-items-center",
                                     ),
                                     # Preterm rate
                                     html.Div(
                                         [
-                                            html.I(className="fas fa-exclamation-triangle text-danger me-1", style={"fontSize": "14px"}),
+                                            html.I(
+                                                className="fas fa-exclamation-triangle text-danger me-1",
+                                                style={"fontSize": "14px"},
+                                            ),
                                             html.Strong("Prematuros: ", className="small"),
                                             html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(f"{preterm_rate:.1f}%".replace(".", ","), className="small text-muted"),
+                                            html.Span(
+                                                f"{preterm_rate:.1f}%".replace(".", ","),
+                                                className="small text-muted",
+                                            ),
                                         ],
                                         className="mb-2 d-flex align-items-center",
                                     ),
                                     # Hospital births
                                     html.Div(
                                         [
-                                            html.I(className="fas fa-hospital text-primary me-1", style={"fontSize": "14px"}),
+                                            html.I(
+                                                className="fas fa-hospital text-primary me-1",
+                                                style={"fontSize": "14px"},
+                                            ),
                                             html.Strong("Hospitalar: ", className="small"),
                                             html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(f"{hospital_rate:.1f}%".replace(".", ","), className="small text-muted"),
+                                            html.Span(
+                                                f"{hospital_rate:.1f}%".replace(".", ","),
+                                                className="small text-muted",
+                                            ),
                                         ],
                                         className="mb-0 d-flex align-items-center",
                                     ),
@@ -172,11 +211,21 @@ def create_layout() -> html.Div:
                                 [
                                     html.Div(
                                         [
-                                            html.H1("📊 SINASC Dashboard", className="mb-3", style={"color": "#2196f3", "fontWeight": "800"}),
+                                            html.H1(
+                                                "📊 SINASC Dashboard",
+                                                className="mb-3",
+                                                style={
+                                                    "color": "#2196f3",
+                                                    "fontWeight": "800",
+                                                },
+                                            ),
                                             html.P(
                                                 "Sistema de Informações sobre Nascidos Vivos",
                                                 className="lead mb-2",
-                                                style={"color": "#616161", "fontSize": "1.25rem"},
+                                                style={
+                                                    "color": "#616161",
+                                                    "fontSize": "1.25rem",
+                                                },
                                             ),
                                             html.P(
                                                 "Análise Comparativa de Indicadores de Saúde Perinatal (2019-2024)",
@@ -205,11 +254,21 @@ def create_layout() -> html.Div:
                         [
                             html.Div(
                                 [
-                                    html.H4("📅 Resumo por Ano", className="mb-0", style={"color": "#424242", "fontWeight": "700"}),
-                                    html.P("Principais indicadores de qualidade perinatal", className="text-muted small mb-0 mt-1"),
+                                    html.H4(
+                                        "📅 Resumo por Ano",
+                                        className="mb-0",
+                                        style={"color": "#424242", "fontWeight": "700"},
+                                    ),
+                                    html.P(
+                                        "Principais indicadores de qualidade perinatal",
+                                        className="text-muted small mb-0 mt-1",
+                                    ),
                                 ],
                                 className="mb-3",
-                                style={"borderLeft": "4px solid #2196f3", "paddingLeft": "16px"},
+                                style={
+                                    "borderLeft": "4px solid #2196f3",
+                                    "paddingLeft": "16px",
+                                },
                             ),
                         ]
                     )
@@ -223,11 +282,21 @@ def create_layout() -> html.Div:
                         [
                             html.Div(
                                 [
-                                    html.H4("📈 Análise Temporal", className="mb-0", style={"color": "#424242", "fontWeight": "700"}),
-                                    html.P("Evolução dos indicadores ao longo dos anos", className="text-muted small mb-0 mt-1"),
+                                    html.H4(
+                                        "📈 Análise Temporal",
+                                        className="mb-0",
+                                        style={"color": "#424242", "fontWeight": "700"},
+                                    ),
+                                    html.P(
+                                        "Evolução dos indicadores ao longo dos anos",
+                                        className="text-muted small mb-0 mt-1",
+                                    ),
                                 ],
                                 className="mb-3 mt-4",
-                                style={"borderLeft": "4px solid #2196f3", "paddingLeft": "16px"},
+                                style={
+                                    "borderLeft": "4px solid #2196f3",
+                                    "paddingLeft": "16px",
+                                },
                             ),
                         ]
                     )
@@ -240,7 +309,13 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Evolução do Total de Nascimentos", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5(
+                                            "Evolução do Total de Nascimentos",
+                                            className="mb-0",
+                                        ),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -265,7 +340,13 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Número Absoluto de Cesáreas", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5(
+                                            "Número Absoluto de Cesáreas",
+                                            className="mb-0",
+                                        ),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -287,7 +368,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Taxa de Cesáreas", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5("Taxa de Cesáreas", className="mb-0"),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -315,7 +399,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Nascimentos Prematuros", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5("Nascimentos Prematuros", className="mb-0"),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -337,7 +424,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Taxa de Prematuridade", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5("Taxa de Prematuridade", className="mb-0"),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -365,7 +455,13 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Gestações em Adolescentes", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5(
+                                            "Gestações em Adolescentes",
+                                            className="mb-0",
+                                        ),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -387,7 +483,13 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Taxa de Gravidez na Adolescência", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5(
+                                            "Taxa de Gravidez na Adolescência",
+                                            className="mb-0",
+                                        ),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -415,7 +517,13 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Baixo Peso ao Nascer (<2.500g)", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5(
+                                            "Baixo Peso ao Nascer (<2.500g)",
+                                            className="mb-0",
+                                        ),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -437,7 +545,13 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Taxa de Baixo Peso ao Nascer", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5(
+                                            "Taxa de Baixo Peso ao Nascer",
+                                            className="mb-0",
+                                        ),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -465,7 +579,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("APGAR5 Baixo (<7)", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5("APGAR5 Baixo (<7)", className="mb-0"),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -487,7 +604,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H5("Taxa de APGAR5 Baixo", className="mb-0"), className="bg-light"),
+                                    dbc.CardHeader(
+                                        html.H5("Taxa de APGAR5 Baixo", className="mb-0"),
+                                        className="bg-light",
+                                    ),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
@@ -599,7 +719,10 @@ def register_callbacks(app):
             df=df,
             x_col="year",
             y_cols=["moderate_preterm_count", "extreme_preterm_birth_count"],
-            labels=["Prematuros Moderados (32-36 sem)", "Prematuros Extremos (<32 sem)"],
+            labels=[
+                "Prematuros Moderados (32-36 sem)",
+                "Prematuros Extremos (<32 sem)",
+            ],
             colors=["warning", "danger"],
             x_title="Ano",
             y_title="Número de Nascimentos Prematuros",
@@ -621,7 +744,10 @@ def register_callbacks(app):
             reference_line={"y": 10, "text": "Referência OMS", "color": "neutral"},
         )
 
-    @app.callback(Output("home-absolute-adolescent-comparison", "figure"), Input("url", "pathname"))
+    @app.callback(
+        Output("home-absolute-adolescent-comparison", "figure"),
+        Input("url", "pathname"),
+    )
     def update_adolescent_absolute(_):
         """Update adolescent pregnancy absolute count chart with stacked bars."""
         df = data_loader.load_yearly_aggregates()
@@ -639,7 +765,10 @@ def register_callbacks(app):
             y_title="Número de Gestações em Adolescentes",
         )
 
-    @app.callback(Output("home-relative-adolescent-comparison", "figure"), Input("url", "pathname"))
+    @app.callback(
+        Output("home-relative-adolescent-comparison", "figure"),
+        Input("url", "pathname"),
+    )
     def update_adolescent_rate(_):
         """Update adolescent pregnancy rate chart with multiple lines."""
         df = data_loader.load_yearly_aggregates()
@@ -654,7 +783,10 @@ def register_callbacks(app):
             y_title="Taxa de Gravidez na Adolescência (%)",
         )
 
-    @app.callback(Output("home-absolute-low-weight-comparison", "figure"), Input("url", "pathname"))
+    @app.callback(
+        Output("home-absolute-low-weight-comparison", "figure"),
+        Input("url", "pathname"),
+    )
     def update_low_weight_absolute(_):
         """Update low birth weight absolute numbers chart."""
         df = data_loader.load_yearly_aggregates()
@@ -668,7 +800,10 @@ def register_callbacks(app):
             color="warning",
         )
 
-    @app.callback(Output("home-relative-low-weight-comparison", "figure"), Input("url", "pathname"))
+    @app.callback(
+        Output("home-relative-low-weight-comparison", "figure"),
+        Input("url", "pathname"),
+    )
     def update_low_weight_rate(_):
         """Update low birth weight rate chart."""
         df = data_loader.load_yearly_aggregates()

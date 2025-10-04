@@ -73,7 +73,10 @@ app = Dash(
     update_title="Carregando...",
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1"},
-        {"name": "description", "content": "Dashboard interativo para análise de dados perinatais brasileiros - SINASC/DATASUS"},
+        {
+            "name": "description",
+            "content": "Dashboard interativo para análise de dados perinatais brasileiros - SINASC/DATASUS",
+        },
         {"name": "theme-color", "content": "#2196f3"},
     ],
 )
@@ -116,7 +119,10 @@ def display_page(pathname):
         return annual.layout
     elif pathname == "/timeline":
         return html.Div(
-            [html.H2("📈 Análise Temporal", className="text-center mt-5"), html.P("Em desenvolvimento...", className="text-center text-muted")],
+            [
+                html.H2("📈 Análise Temporal", className="text-center mt-5"),
+                html.P("Em desenvolvimento...", className="text-center text-muted"),
+            ],
             className="container",
         )
     elif pathname == "/geographic":
@@ -139,8 +145,16 @@ def display_page(pathname):
         return html.Div(
             [
                 html.H2("404 - Página não encontrada", className="text-center mt-5"),
-                html.P("A página solicitada não existe.", className="text-center text-muted"),
-                dbc.Button("Voltar ao Início", href="/", color="primary", className="d-block mx-auto"),
+                html.P(
+                    "A página solicitada não existe.",
+                    className="text-center text-muted",
+                ),
+                dbc.Button(
+                    "Voltar ao Início",
+                    href="/",
+                    color="primary",
+                    className="d-block mx-auto",
+                ),
             ],
             className="container",
         )

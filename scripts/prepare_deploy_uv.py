@@ -153,7 +153,10 @@ def create_railway_config():
 
     railway_config = {
         "$schema": "https://railway.app/railway.schema.json",
-        "build": {"builder": "NIXPACKS", "buildCommand": "pip install -r dashboard/requirements.txt"},
+        "build": {
+            "builder": "NIXPACKS",
+            "buildCommand": "pip install -r dashboard/requirements.txt",
+        },
         "deploy": {
             "startCommand": "cd dashboard && gunicorn app:server --bind 0.0.0.0:$PORT --workers 2",
             "healthcheckPath": "/",
@@ -327,7 +330,7 @@ def validate_deployment():
     # Check requirements
     if Path("dashboard/requirements.txt").exists():
         with open("dashboard/requirements.txt") as f:
-            lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+            lines = [line.strip() for line in f if line.strip() and not line.startswith("#")]
         checks.append(f"  ✅ Requirements.txt exists ({len(lines)} packages)")
 
         # Check for key packages

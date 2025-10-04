@@ -104,3 +104,18 @@ CHART_TITLES = {
     "delivery_type": "Tipo de Parto",
     "births_by_state": "Nascimentos por Estado",
 }
+
+MONTH_NAMES = [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+]

@@ -8,8 +8,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 from config.settings import AGGREGATES_DIR, CACHE_SIZE, METADATA_PATH, YEARS_DIR
-
-MONTH_NAMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+from config.constants import MONTH_NAMES
 
 
 class DataLoader:

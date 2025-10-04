@@ -48,7 +48,11 @@ def calculate_weight_percentile(df: pd.DataFrame, z_score_path: str, overwrite: 
         # Calculate percentiles using pygrowthstandards
         # Note: Library expects sex as 'M'/'F' and gestational_age in days
 
-        sex_map: dict[int, Literal["M", "F", "U"]] = {1: "M", 2: "F", 9: "U"}  # SINASC: 1 for Male, 2 for Female
+        sex_map: dict[int, Literal["M", "F", "U"]] = {
+            1: "M",
+            2: "F",
+            9: "U",
+        }  # SINASC: 1 for Male, 2 for Female
 
         # Create a boolean mask for rows that can be processed
         # This avoids using .apply on the entire DataFrame, which is slow.

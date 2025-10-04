@@ -28,7 +28,13 @@ def _request_csv(year: int) -> pd.DataFrame:
     response = requests.get(url)
     response.raise_for_status()
 
-    return pd.read_csv(io.StringIO(response.text), sep=";", low_memory=False, encoding="utf-8", dtype=str)
+    return pd.read_csv(
+        io.StringIO(response.text),
+        sep=";",
+        low_memory=False,
+        encoding="utf-8",
+        dtype=str,
+    )
 
 
 def _request_zip(year: int):

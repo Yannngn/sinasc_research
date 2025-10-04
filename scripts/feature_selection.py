@@ -83,7 +83,12 @@ def main():
     parser.add_argument("year", type=int, default=YEAR, help="Year to process")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")
     parser.add_argument("--dataset", default=DATASET, help="Dataset name")
-    parser.add_argument("--selected_features", nargs="+", default=SELECTED_FEATURES, help="List of selected features")
+    parser.add_argument(
+        "--selected_features",
+        nargs="+",
+        default=SELECTED_FEATURES,
+        help="List of selected features",
+    )
     args = parser.parse_args()
 
     # Define paths

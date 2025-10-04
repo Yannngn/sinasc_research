@@ -65,17 +65,42 @@ BIN_COLUMNS = {
     "IDADEMAE": (
         [8, 13, 17, 25, 35, 40, 50, 99],
         [1, 2, 3, 4, 5, 6, 7],
-        ["Menor que 13", "13-16", "17-24", "25-34", "35-39", "40-49", "50 ou mais", "Ignorado"],
+        [
+            "Menor que 13",
+            "13-16",
+            "17-24",
+            "25-34",
+            "35-39",
+            "40-49",
+            "50 ou mais",
+            "Ignorado",
+        ],
     ),
     "IDADEPAI": (
         [8, 13, 17, 25, 35, 50, 65, 99],
         [1, 2, 3, 4, 5, 6, 7],
-        ["Menor que 13", "13-16", "17-24", "25-34", "35-49", "50-64", "65 ou mais", "Ignorado"],
+        [
+            "Menor que 13",
+            "13-16",
+            "17-24",
+            "25-34",
+            "35-49",
+            "50-64",
+            "65 ou mais",
+            "Ignorado",
+        ],
     ),
     "PESO": (
         [100, 1000, 1500, 2500, 4000, 7000],
         [1, 2, 3, 4, 5],
-        ["Menor que 1000g", "1000-1499g", "1500-2499g", "2500-3999g", "4000g ou mais", "Ignorado"],
+        [
+            "Menor que 1000g",
+            "1000-1499g",
+            "1500-2499g",
+            "2500-3999g",
+            "4000g ou mais",
+            "Ignorado",
+        ],
     ),
     "PESOPERC": (
         [0, 0.10, 0.90, 1.0],
@@ -291,7 +316,13 @@ def save_labels(output_path: str = "data/SINASC/engineered_categorical.json") ->
         labels[col + "BIN"]["9"] = "Ignorado"
 
     # Add labels for APGAR evolution
-    labels["EVOAPGAR"] = {"1": "Normal", "2": "Desconforto Superado", "3": "Desconforto Tardio", "4": "Desconforto Mantido", "9": "Ignorado"}
+    labels["EVOAPGAR"] = {
+        "1": "Normal",
+        "2": "Desconforto Superado",
+        "3": "Desconforto Tardio",
+        "4": "Desconforto Mantido",
+        "9": "Ignorado",
+    }
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(labels, f, ensure_ascii=False, indent=4)
@@ -333,12 +364,24 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
 
     for col, (bins, bin_values, _) in BIN_COLUMNS.items():
         print(f"Creating binned column: {col}")
-        df = bin_column(df, col, bins=bins, labels=list(map(str, bin_values)), new_column=col + "BIN")
+        df = bin_column(
+            df,
+            col,
+            bins=bins,
+            labels=list(map(str, bin_values)),
+            new_column=col + "BIN",
+        )
         df[col] = df[col].astype("category")
 
     for col, (bins, bin_values, _) in TIME_COLUMNS.items():
         print(f"Creating binned column: {col}")
-        df = bin_time_column(df, col, bins=bins, labels=list(map(str, bin_values)), new_column=col + "BIN")
+        df = bin_time_column(
+            df,
+            col,
+            bins=bins,
+            labels=list(map(str, bin_values)),
+            new_column=col + "BIN",
+        )
         df[col] = df[col].astype("category")
 
     print("✅ Feature engineering completed.")

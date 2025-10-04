@@ -26,7 +26,13 @@ def main():
     import subprocess
 
     parser = argparse.ArgumentParser(description="Complete SINASC data processing and dashboard data creation")
-    parser.add_argument("year", type=int, default=YEAR, nargs="?", help="Year to process (default: 2024)")
+    parser.add_argument(
+        "year",
+        type=int,
+        default=YEAR,
+        nargs="?",
+        help="Year to process (default: 2024)",
+    )
     parser.add_argument("--all", action="store_true", help="Process all available years (2019-2024)")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing data")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")

@@ -36,7 +36,10 @@ def create_metric_card(title: str, value: str, icon: str, color: str = "primary"
             [
                 html.Div(
                     [
-                        html.I(className=f"fas {icon} fa-2x mb-2", style={"color": COLOR_PALETTE.get(color, "#1f77b4")}),
+                        html.I(
+                            className=f"fas {icon} fa-2x mb-2",
+                            style={"color": COLOR_PALETTE.get(color, "#1f77b4")},
+                        ),
                         html.H4(value, className="mb-0 fw-bold"),
                         html.P(title, className="text-muted mb-0 small"),
                     ],
@@ -68,7 +71,10 @@ def create_layout() -> html.Div:
                     dbc.Col(
                         [
                             html.H1("📅 Análise Anual", className="mb-2"),
-                            html.P("Detalhamento de Nascimentos por Ano", className="lead text-muted mb-4"),
+                            html.P(
+                                "Detalhamento de Nascimentos por Ano",
+                                className="lead text-muted mb-4",
+                            ),
                         ]
                     )
                 ]
@@ -162,7 +168,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Col(
                                 [
-                                    html.H4("📈 Evolução Mensal", className="mb-3 fw-bold text-secondary"),
+                                    html.H4(
+                                        "📈 Evolução Mensal",
+                                        className="mb-3 fw-bold text-secondary",
+                                    ),
                                 ]
                             )
                         ]
@@ -174,7 +183,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Nascimentos por Mês", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Nascimentos por Mês",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -199,7 +214,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Número Mensal de Cesáreas", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Número Mensal de Cesáreas",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -221,7 +242,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Taxa Mensal de Cesárea", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Taxa Mensal de Cesárea",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -249,7 +276,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Nascimentos Prematuros Mensais", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Nascimentos Prematuros Mensais",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -271,7 +304,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Taxa Mensal de Prematuridade", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Taxa Mensal de Prematuridade",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -300,7 +339,11 @@ def create_layout() -> html.Div:
                                     dbc.Card(
                                         [
                                             dbc.CardHeader(
-                                                html.H5("Gestações em Adolescentes Mensais", className="mb-0"), className="bg-light"
+                                                html.H5(
+                                                    "Gestações em Adolescentes Mensais",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
                                             ),
                                             dbc.CardBody(
                                                 [
@@ -324,7 +367,11 @@ def create_layout() -> html.Div:
                                     dbc.Card(
                                         [
                                             dbc.CardHeader(
-                                                html.H5("Taxa Mensal de Gravidez na Adolescência", className="mb-0"), className="bg-light"
+                                                html.H5(
+                                                    "Taxa Mensal de Gravidez na Adolescência",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
                                             ),
                                             dbc.CardBody(
                                                 [
@@ -354,7 +401,11 @@ def create_layout() -> html.Div:
                                     dbc.Card(
                                         [
                                             dbc.CardHeader(
-                                                html.H5("Baixo Peso ao Nascer Mensal (<2.500g)", className="mb-0"), className="bg-light"
+                                                html.H5(
+                                                    "Baixo Peso ao Nascer Mensal (<2.500g)",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
                                             ),
                                             dbc.CardBody(
                                                 [
@@ -378,7 +429,11 @@ def create_layout() -> html.Div:
                                     dbc.Card(
                                         [
                                             dbc.CardHeader(
-                                                html.H5("Taxa Mensal de Baixo Peso ao Nascer", className="mb-0"), className="bg-light"
+                                                html.H5(
+                                                    "Taxa Mensal de Baixo Peso ao Nascer",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
                                             ),
                                             dbc.CardBody(
                                                 [
@@ -407,7 +462,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("APGAR5 Baixo Mensal (<7)", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "APGAR5 Baixo Mensal (<7)",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -429,7 +490,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Taxa Mensal de APGAR5 Baixo", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Taxa Mensal de APGAR5 Baixo",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -455,7 +522,10 @@ def create_layout() -> html.Div:
                         [
                             dbc.Col(
                                 [
-                                    html.H4("📊 Distribuições", className="mb-3 fw-bold text-secondary"),
+                                    html.H4(
+                                        "📊 Distribuições",
+                                        className="mb-3 fw-bold text-secondary",
+                                    ),
                                 ]
                             )
                         ]
@@ -467,7 +537,10 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Tipo de Parto", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5("Tipo de Parto", className="mb-0"),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -489,7 +562,13 @@ def create_layout() -> html.Div:
                                 [
                                     dbc.Card(
                                         [
-                                            dbc.CardHeader(html.H5("Distribuição de Idade Materna", className="mb-0"), className="bg-light"),
+                                            dbc.CardHeader(
+                                                html.H5(
+                                                    "Distribuição de Idade Materna",
+                                                    className="mb-0",
+                                                ),
+                                                className="bg-light",
+                                            ),
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
@@ -605,7 +684,10 @@ def register_callbacks(app):
                         [
                             html.I(className="fas fa-female fa-2x text-info mb-2"),
                             html.H4(f"{formatted_age}%", className="text-info fw-bold mb-1"),
-                            html.P("Taxa de Gestações Abaixo de 20 anos", className="text-muted mb-0 small"),
+                            html.P(
+                                "Taxa de Gestações Abaixo de 20 anos",
+                                className="text-muted mb-0 small",
+                            ),
                         ],
                         className="text-center",
                     )
@@ -620,8 +702,14 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-child fa-2x text-success mb-2"),
-                            html.H4(f"{formatted_very_young}%", className="text-success fw-bold mb-1"),
-                            html.P("Taxa de Gestações Abaixo de 15 anos", className="text-muted mb-0 small"),
+                            html.H4(
+                                f"{formatted_very_young}%",
+                                className="text-success fw-bold mb-1",
+                            ),
+                            html.P(
+                                "Taxa de Gestações Abaixo de 15 anos",
+                                className="text-muted mb-0 small",
+                            ),
                         ],
                         className="text-center",
                     )
@@ -636,7 +724,10 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-procedures fa-2x text-warning mb-2"),
-                            html.H4(f"{formatted_cesarean}%", className="text-warning fw-bold mb-1"),
+                            html.H4(
+                                f"{formatted_cesarean}%",
+                                className="text-warning fw-bold mb-1",
+                            ),
                             html.P("Taxa de Cesárea", className="text-muted mb-0 small"),
                         ],
                         className="text-center",
@@ -652,8 +743,14 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-weight-hanging fa-2x text-warning mb-2"),
-                            html.H4(f"{formatted_low_weight}%", className="text-warning fw-bold mb-1"),
-                            html.P("Taxa de Baixo Peso (<2.500g)", className="text-muted mb-0 small"),
+                            html.H4(
+                                f"{formatted_low_weight}%",
+                                className="text-warning fw-bold mb-1",
+                            ),
+                            html.P(
+                                "Taxa de Baixo Peso (<2.500g)",
+                                className="text-muted mb-0 small",
+                            ),
                         ],
                         className="text-center",
                     )
@@ -668,7 +765,10 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-exclamation-triangle fa-2x text-danger mb-2"),
-                            html.H4(f"{formatted_preterm}%", className="text-danger fw-bold mb-1"),
+                            html.H4(
+                                f"{formatted_preterm}%",
+                                className="text-danger fw-bold mb-1",
+                            ),
                             html.P("Taxa de Prematuros", className="text-muted mb-0 small"),
                         ],
                         className="text-center",
@@ -684,8 +784,14 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-hospital fa-2x text-primary mb-2"),
-                            html.H4(f"{formatted_hospital}%", className="text-primary fw-bold mb-1"),
-                            html.P("Nascimentos Hospitalares", className="text-muted mb-0 small"),
+                            html.H4(
+                                f"{formatted_hospital}%",
+                                className="text-primary fw-bold mb-1",
+                            ),
+                            html.P(
+                                "Nascimentos Hospitalares",
+                                className="text-muted mb-0 small",
+                            ),
                         ],
                         className="text-center",
                     )
@@ -700,8 +806,14 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-heartbeat fa-2x text-danger mb-2"),
-                            html.H4(f"{formatted_low_apgar}%", className="text-danger fw-bold mb-1"),
-                            html.P("Taxa de APGAR5 Baixo (<7)", className="text-muted mb-0 small"),
+                            html.H4(
+                                f"{formatted_low_apgar}%",
+                                className="text-danger fw-bold mb-1",
+                            ),
+                            html.P(
+                                "Taxa de APGAR5 Baixo (<7)",
+                                className="text-muted mb-0 small",
+                            ),
                         ],
                         className="text-center",
                     )
@@ -710,9 +822,21 @@ def register_callbacks(app):
             className="shadow-sm h-100",
         )
 
-        return births_card, age_card, weight_card, cesarean_card, low_weight_card, preterm_card, hospital_card, low_apgar_card
+        return (
+            births_card,
+            age_card,
+            weight_card,
+            cesarean_card,
+            low_weight_card,
+            preterm_card,
+            hospital_card,
+            low_apgar_card,
+        )
 
-    @app.callback(Output("annual-timeline-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-timeline-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_timeline_chart(year: int):
         """Update timeline chart based on selected year with vertical month labels."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -728,7 +852,10 @@ def register_callbacks(app):
 
         return fig
 
-    @app.callback(Output("annual-absolute-cesarean-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-absolute-cesarean-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_absolute_cesarean_chart(year: int):
         """Update monthly cesarean absolute count chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -747,7 +874,10 @@ def register_callbacks(app):
 
         return fig
 
-    @app.callback(Output("annual-relative-cesarean-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-relative-cesarean-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_relative_cesarean_chart(year: int):
         """Update monthly cesarean rate chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -763,7 +893,10 @@ def register_callbacks(app):
         )
         return fig
 
-    @app.callback(Output("annual-absolute-preterm-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-absolute-preterm-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_absolute_preterm_chart(year: int):
         """Update monthly preterm births absolute count chart with stacked bars."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -775,14 +908,20 @@ def register_callbacks(app):
             df=monthly_data,
             x_col="month_label",
             y_cols=["moderate_preterm_count", "extreme_preterm_birth_count"],
-            labels=["Prematuros Moderados (32-36 sem)", "Prematuros Extremos (<32 sem)"],
+            labels=[
+                "Prematuros Moderados (32-36 sem)",
+                "Prematuros Extremos (<32 sem)",
+            ],
             colors=["warning", "danger"],
             x_title="Mês",
             y_title="Número de Nascimentos Prematuros",
             text_size=9,
         )
 
-    @app.callback(Output("annual-relative-preterm-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-relative-preterm-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_relative_preterm_chart(year: int):
         """Update monthly preterm birth rate chart with multiple lines."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -798,7 +937,10 @@ def register_callbacks(app):
             reference_line={"y": 10, "text": "Referência OMS", "color": "neutral"},
         )
 
-    @app.callback(Output("annual-absolute-adolescent-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-absolute-adolescent-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_absolute_adolescent_chart(year: int):
         """Update monthly adolescent pregnancy absolute count chart with stacked bars."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -817,7 +959,10 @@ def register_callbacks(app):
             text_size=9,
         )
 
-    @app.callback(Output("annual-relative-adolescent-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-relative-adolescent-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_relative_adolescent_chart(year: int):
         """Update monthly adolescent pregnancy rate chart with multiple lines."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -832,7 +977,10 @@ def register_callbacks(app):
             y_title="Taxa de Gravidez na Adolescência (%)",
         )
 
-    @app.callback(Output("annual-absolute-low-weight-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-absolute-low-weight-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_absolute_low_weight_chart(year: int):
         """Update monthly low birth weight absolute numbers chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -846,7 +994,10 @@ def register_callbacks(app):
             color="warning",
         )
 
-    @app.callback(Output("annual-relative-low-weight-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-relative-low-weight-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_relative_low_weight_chart(year: int):
         """Update monthly low birth weight rate chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -860,7 +1011,10 @@ def register_callbacks(app):
             color="warning",
         )
 
-    @app.callback(Output("annual-absolute-low-apgar-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-absolute-low-apgar-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_absolute_low_apgar_chart(year: int):
         """Update monthly low APGAR5 absolute numbers chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -874,7 +1028,10 @@ def register_callbacks(app):
             color="danger",
         )
 
-    @app.callback(Output("annual-relative-low-apgar-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-relative-low-apgar-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_relative_low_apgar_chart(year: int):
         """Update monthly low APGAR5 rate chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
@@ -888,19 +1045,34 @@ def register_callbacks(app):
             color="danger",
         )
 
-    @app.callback(Output("annual-delivery-type-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-delivery-type-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_delivery_type_chart(year: int):
         """Update delivery type pie chart."""
         summary = data_loader.get_year_summary(year)
         delivery_type = summary.get("delivery_type", {})
 
         # Create pie chart data
-        values = [delivery_type.get("vaginal_pct", 0), delivery_type.get("cesarean_pct", 0)]
+        values = [
+            delivery_type.get("vaginal_pct", 0),
+            delivery_type.get("cesarean_pct", 0),
+        ]
         labels = ["Vaginal", "Cesárea"]
         colors = [COLOR_PALETTE["primary"], COLOR_PALETTE["secondary"]]
 
         fig = go.Figure(
-            data=[go.Pie(labels=labels, values=values, marker=dict(colors=colors), hole=0.4, textinfo="label+percent", textposition="auto")]
+            data=[
+                go.Pie(
+                    labels=labels,
+                    values=values,
+                    marker=dict(colors=colors),
+                    hole=0.4,
+                    textinfo="label+percent",
+                    textposition="auto",
+                )
+            ]
         )
 
         fig.update_layout(
@@ -912,7 +1084,10 @@ def register_callbacks(app):
 
         return fig
 
-    @app.callback(Output("annual-maternal-ocupation-chart", "figure"), Input("annual-year-dropdown", "value"))
+    @app.callback(
+        Output("annual-maternal-ocupation-chart", "figure"),
+        Input("annual-year-dropdown", "value"),
+    )
     def update_maternal_occupation_chart(year: int):
         """
         Update maternal occupation distribution chart using metadata summary.

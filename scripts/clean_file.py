@@ -41,7 +41,7 @@ NUMERICAL_WITH_UNKNOWN_FLAGS = {
 def check_data(df: pd.DataFrame) -> None:
     """
     Validate DataFrame schema against official SINASC specification.
-    
+
     Args:
         df: Input DataFrame to validate
     """
@@ -82,10 +82,10 @@ def check_data(df: pd.DataFrame) -> None:
 def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Replace unknown value flags with NaN based on SINASC specifications.
-    
+
     Args:
         df: Input DataFrame with SINASC data
-        
+
     Returns:
         Cleaned DataFrame with unknown flags replaced by NaN
     """
@@ -112,10 +112,10 @@ def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
 def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     """
     Optimize data types to reduce memory usage based on official SINASC schema.
-    
+
     Args:
         df: Input DataFrame with raw SINASC data
-        
+
     Returns:
         Optimized DataFrame with proper data types
     """
@@ -168,7 +168,11 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
                 for col in cols:
                     date_str = df[col].astype("string").str.replace(r"\.0$", "", regex=True).str.zfill(8)
                     valid_mask = date_str.str.match(r"^\d{8}$", na=False)
-                    df[col] = pd.to_datetime(date_str.where(valid_mask, pd.NA), format="%d%m%Y", errors="coerce")
+                    df[col] = pd.to_datetime(
+                        date_str.where(valid_mask, pd.NA),
+                        format="%d%m%Y",
+                        errors="coerce",
+                    )
 
                 conversion_count += len(cols)
             elif target_type == "time":
@@ -177,7 +181,11 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
                 for col in cols:
                     time_str = df[col].astype("string").str.replace(r"\.0$", "", regex=True).str.zfill(4)
                     valid_mask = time_str.str.match(r"^\d{4}$", na=False)
-                    df[col] = pd.to_datetime(time_str.where(valid_mask, pd.NA), format="%H%M", errors="coerce").dt.time
+                    df[col] = pd.to_datetime(
+                        time_str.where(valid_mask, pd.NA),
+                        format="%H%M",
+                        errors="coerce",
+                    ).dt.time
 
                 conversion_count += len(cols)
 
