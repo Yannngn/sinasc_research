@@ -1,5 +1,5 @@
-*.parquet
-*.csv
+data/**/**.parquet
+data/**/**.csv
 data/**/*.json
 
 # Python-generated files
