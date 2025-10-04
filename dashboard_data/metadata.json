@@ -1,0 +1,300 @@
+{
+  "generated_at": "2025-10-03T22:38:18.204681",
+  "total_years": 6,
+  "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "total_records": 15615924,
+  "date_range": {
+    "min": "2019-01-01T00:00:00",
+    "max": "2024-12-31T00:00:00"
+  },
+  "yearly_summaries": [
+    {
+      "year": 2019,
+      "total_births": 2849146,
+      "date_range": {
+        "min": "2019-01-01T00:00:00",
+        "max": "2019-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 27.106451780473236,
+        "median": 27.0,
+        "std": 6.763424751557836
+      },
+      "birth_weight": {
+        "mean": 3183.9329051397276,
+        "median": 3220.0,
+        "std": 562.5866162588342
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.360845298185843,
+        "apgar5_mean": 9.338022636242393
+      },
+      "delivery_type": {
+        "cesarean_rate_pct": 56.30420483892367,
+        "vaginal_rate_pct": 43.630758128927056
+      },
+      "location": {
+        "hospital_birth_pct": 98.48175558570884,
+        "unique_municipalities": 3821
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.2443918282881956,
+        "preterm_birth_pct": 11.08511111750679,
+        "gestational_weeks_mean": 38.470925522767345,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 8.699308494545383,
+        "low_apgar5_pct": 1.0077054668311136
+      }
+    },
+    {
+      "year": 2020,
+      "total_births": 2730145,
+      "date_range": {
+        "min": "2020-01-01T00:00:00",
+        "max": "2020-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 27.21654557808428,
+        "median": 27.0,
+        "std": 6.76388497043102
+      },
+      "birth_weight": {
+        "mean": 3194.0664398125964,
+        "median": 3230.0,
+        "std": 565.8231428300401
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.362519128058256,
+        "apgar5_mean": 9.3323307531967
+      },
+      "delivery_type": {
+        "cesarean_rate_pct": 57.22340754795076,
+        "vaginal_rate_pct": 42.695204833442915
+      },
+      "location": {
+        "hospital_birth_pct": 98.34034456045376,
+        "unique_municipalities": 3834
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.2529572605118044,
+        "preterm_birth_pct": 11.30716500405656,
+        "gestational_weeks_mean": 38.41870546525427,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 8.582877466215164,
+        "low_apgar5_pct": 1.0006794510914254
+      }
+    },
+    {
+      "year": 2021,
+      "total_births": 2677101,
+      "date_range": {
+        "min": "2021-01-01T00:00:00",
+        "max": "2021-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 27.27273779995816,
+        "median": 27.0,
+        "std": 6.773122319975577
+      },
+      "birth_weight": {
+        "mean": 3178.8472056066457,
+        "median": 3215.0,
+        "std": 563.5003146354586
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.346093628897682,
+        "apgar5_mean": 9.315836660330971
+      },
+      "delivery_type": {
+        "cesarean_rate_pct": 57.01372492109935,
+        "vaginal_rate_pct": 42.93084198168093
+      },
+      "location": {
+        "hospital_birth_pct": 98.21908101337978,
+        "unique_municipalities": 3902
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.256022466092986,
+        "preterm_birth_pct": 11.353101732060166,
+        "gestational_weeks_mean": 38.42899854423081,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 8.908218255493535,
+        "low_apgar5_pct": 1.0279029442669514
+      }
+    },
+    {
+      "year": 2022,
+      "total_births": 2561922,
+      "date_range": {
+        "min": "2022-01-01T00:00:00",
+        "max": "2022-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 27.551857351298306,
+        "median": 27.0,
+        "std": 6.732553528521103
+      },
+      "birth_weight": {
+        "mean": 3153.009126204117,
+        "median": 3195.0,
+        "std": 560.1679861868112
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.337993262448347,
+        "apgar5_mean": 9.304887521651727
+      },
+      "delivery_type": {
+        "cesarean_rate_pct": 58.09790462004698,
+        "vaginal_rate_pct": 41.85478714808647
+      },
+      "location": {
+        "hospital_birth_pct": 98.29959694323246,
+        "unique_municipalities": 3861
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.3251683696849477,
+        "preterm_birth_pct": 11.84567680046465,
+        "gestational_weeks_mean": 38.36354546056031,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 9.446267294632701,
+        "low_apgar5_pct": 1.0200154415317875
+      }
+    },
+    {
+      "year": 2023,
+      "total_births": 2537576,
+      "date_range": {
+        "min": "2023-01-01T00:00:00",
+        "max": "2023-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 27.65704764689609,
+        "median": 27.0,
+        "std": 6.723351800596034
+      },
+      "birth_weight": {
+        "mean": 3151.1064986986207,
+        "median": 3190.0,
+        "std": 558.9242793984705
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.323018046306421,
+        "apgar5_mean": 9.2918196663773
+      },
+      "delivery_type": {
+        "cesarean_rate_pct": 59.585249860496795,
+        "vaginal_rate_pct": 40.37557889891771
+      },
+      "location": {
+        "hospital_birth_pct": 98.37415706958137,
+        "unique_municipalities": 3822
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.331752822378522,
+        "preterm_birth_pct": 11.958262530856219,
+        "gestational_weeks_mean": 38.3230136003594,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 9.474947745407428,
+        "low_apgar5_pct": 1.0365797911077343
+      }
+    },
+    {
+      "year": 2024,
+      "total_births": 2260034,
+      "date_range": {
+        "min": "2024-01-01T00:00:00",
+        "max": "2024-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 27.75738968950096,
+        "median": 27.0,
+        "std": 6.684380864270019
+      },
+      "birth_weight": {
+        "mean": 3149.581667899775,
+        "median": 3190.0,
+        "std": 557.5584305442814
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.309339349489681,
+        "apgar5_mean": 9.283763445906835
+      },
+      "delivery_type": {
+        "cesarean_rate_pct": 60.60687582576191,
+        "vaginal_rate_pct": 39.32064738849061
+      },
+      "location": {
+        "hospital_birth_pct": 98.49373947471587,
+        "unique_municipalities": 3744
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.3635485129869727,
+        "preterm_birth_pct": 12.336982540970624,
+        "gestational_weeks_mean": 38.24007578145158,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 9.490653680431356,
+        "low_apgar5_pct": 1.0141882821231893
+      }
+    }
+  ],
+  "schema": {
+    "essential_columns": [
+      "DTNASC",
+      "HORANASC",
+      "CODMUNNASC",
+      "CODMUNRES",
+      "IDADEMAE",
+      "IDADEPAI",
+      "ESTCIVMAE",
+      "ESCMAE",
+      "RACACOR",
+      "RACACORMAE",
+      "SEXO",
+      "CONSULTAS",
+      "CONSPRENAT",
+      "MESPRENAT",
+      "KOTELCHUCK",
+      "GRAVIDEZ",
+      "QTDGESTANT",
+      "GESTACAO",
+      "SEMAGESTAC",
+      "LOCNASC",
+      "CODESTAB",
+      "PARTO",
+      "TPROBSON",
+      "PESO",
+      "APGAR1",
+      "APGAR5",
+      "IDADEMAEBIN",
+      "PESOBIN",
+      "DESLOCNASCBOOL"
+    ],
+    "aggregate_metrics": [
+      "total_births",
+      "PESO_mean",
+      "PESO_median",
+      "IDADEMAE_mean",
+      "cesarean_rate_pct",
+      "hospital_birth_pct"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+# SINASC Dashboard Dependencies
+# Core framework
+dash==2.14.2
+dash-bootstrap-components==1.5.0
+
+# Data processing
+pandas==2.1.4
+pyarrow==14.0.1
+
+# Visualization
+plotly==5.18.0
+
+# Deployment
+gunicorn==21.2.0
+
+# Optional for development
+python-dotenv==1.0.0
