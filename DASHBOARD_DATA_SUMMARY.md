@@ -329,7 +329,7 @@ fig.show()
 states = pd.read_parquet('dashboard_data/aggregates/state_2024.parquet')
 
 # 5. Top 5 states by births
-top5 = states.nlargest(5, 'total_births')[['state_code', 'total_births', 'cesarean_rate_pct']]
+top5 = states.nlargest(5, 'total_births')[['state_code', 'total_births', 'cesarean_pct']]
 print(top5)
 ```
 

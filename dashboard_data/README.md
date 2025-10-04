@@ -78,11 +78,18 @@ df = pd.read_parquet(
 **Metrics:**
 - `total_births`: Birth count
 - `PESO_mean`, `PESO_median`, `PESO_std`: Birth weight statistics
-- `IDADEMAE_mean`, `IDADEMAE_median`: Maternal age
+- `IDADEMAE_mean`, `IDADEMAE_median`: Maternal age statistics
+- `SEMAGESTAC_mean`, `SEMAGESTAC_median`: Gestational weeks
 - `APGAR1_mean`, `APGAR5_mean`: APGAR scores
-- `cesarean_rate_pct`: Cesarean delivery rate
+- ``: Cesarean delivery rate
 - `multiple_pregnancy_pct`: Multiple pregnancy rate
 - `hospital_birth_pct`: Hospital birth rate
+- `preterm_birth_pct`, `preterm_birth_count`: Preterm births (<37 weeks / GESTACAO <5)
+- `extreme_preterm_birth_pct`, `extreme_preterm_birth_count`: Extreme preterm births (<32 weeks / GESTACAO <3)
+- `adolescent_pregnancy_pct`, `adolescent_pregnancy_count`: Adolescent pregnancies (mother <20 years)
+- `very_young_pregnancy_pct`, `very_young_pregnancy_count`: Very young pregnancies (mother <15 years)
+- `low_birth_weight_pct`, `low_birth_weight_count`: Low birth weight (<2,500g)
+- `low_apgar5_pct`, `low_apgar5_count`: Low APGAR5 score (<7)
 
 **Use Case:** Timeline visualizations, trend analysis
 
@@ -108,10 +115,12 @@ fig = px.line(monthly, x='year_month', y='total_births',
 - `PESO_mean`, `PESO_median`, `PESO_std`: Birth weight by state
 - `IDADEMAE_mean`, `IDADEMAE_median`: Maternal age by state
 - `APGAR1_mean`, `APGAR5_mean`: APGAR scores by state
-- `cesarean_rate_pct`: Cesarean rate by state
-- `multiple_pregnancy_pct`: Multiple pregnancy rate
-- `hospital_birth_pct`: Hospital birth rate
-- `preterm_rate_pct`: Preterm birth rate
+- `cesarean_pct`: Cesarean rate by state
+- `multiple_pregnancy_pct`: Multiple pregnancy rate by state
+- `hospital_birth_pct`: Hospital birth rate by state
+- `preterm_rate_pct`: Preterm birth rate by state (<37 weeks)
+- `low_birth_weight_pct`: Low birth weight rate (<2,500g) by state
+- `low_apgar5_pct`: Low APGAR5 score rate (<7) by state
 
 **Use Case:** Choropleth maps, regional comparisons
 
@@ -126,7 +135,7 @@ fig = px.choropleth(
     states,
     geojson=brazil_geojson,
     locations='state_code',
-    color='cesarean_rate_pct',
+    color='cesarean_pct',
     title='Cesarean Rate by State'
 )
 ```
@@ -142,7 +151,7 @@ fig = px.choropleth(
 - `PESO_mean`, `PESO_median`: Birth weight by municipality
 - `IDADEMAE_mean`: Maternal age by municipality
 - `APGAR5_mean`: APGAR score by municipality
-- `cesarean_rate_pct`: Cesarean rate by municipality
+- `cesarean_pct`: Cesarean rate by municipality
 
 **Use Case:** Detailed geographic analysis, city comparisons
 
@@ -175,7 +184,7 @@ import plotly.express as px
 fig = px.line(
     combined, 
     x='year', 
-    y='cesarean_rate_pct',
+    y='cesarean_pct',
     color='state_code',
     title='Cesarean Rate Trends by State'
 )
@@ -202,7 +211,12 @@ fig = px.line(
   "yearly_summaries": [{...}],
   "schema": {
     "essential_columns": [...],
-    "aggregate_metrics": [...]
+    "aggregate_metrics": [
+      "total_births", "PESO_mean", "PESO_median", "IDADEMAE_mean",
+      "", "hospital_birth_pct", "preterm_birth_pct",
+      "extreme_preterm_birth_pct", "adolescent_pregnancy_pct",
+      "very_young_pregnancy_pct", "low_birth_weight_pct", "low_apgar5_pct"
+    ]
   }
 }
 ```
@@ -237,6 +251,11 @@ print(f"Date range: {metadata['date_range']['min']} to {metadata['date_range']['
 | **Hospital Births** | 98.5% |
 | **Multiple Pregnancies** | 2.4% |
 | **Preterm Births** | 12.3% |
+| **Extreme Preterm Births** | 2.1% |
+| **Adolescent Pregnancies** | 14.2% |
+| **Very Young Pregnancies** | 0.8% |
+| **Low Birth Weight** | 8.5% |
+| **Low APGAR5 Score** | 1.2% |
 | **Avg APGAR (5min)** | 9.3 |
 
 ---

@@ -46,8 +46,8 @@ NEW_CAT_COLUMNS = {
         ["999991", "999992", "6", "2", "3", "4", "5"],
         [1, 2, 3, 4, 5, 6, 7],
         [
-            "Trabalhadora do Lar",
             "Estudante",
+            "Trabalhadora do Lar",
             "Trabalhadora Rural",
             "Profissionais das Ciências e das Artes",
             "Técnicos e Profissionais de Nível Médio",
@@ -126,14 +126,14 @@ TIME_COLUMNS = {
 def new_category_column(df: pd.DataFrame, column: str, new_column: str, to_replace: list, bins: list) -> pd.DataFrame:
     """
     Create new categorical column from existing column using mappings.
-    
+
     Args:
         df: Input DataFrame
         column: Source column name
         new_column: New column name
         to_replace: List of values to replace
         bins: List of replacement values
-        
+
     Returns:
         DataFrame with new categorical column
     """
@@ -151,13 +151,13 @@ def new_category_column(df: pd.DataFrame, column: str, new_column: str, to_repla
 def bool_column(df: pd.DataFrame, column: str, new_column: str, func) -> pd.DataFrame:
     """
     Create boolean column by applying function to existing column.
-    
+
     Args:
         df: Input DataFrame
         column: Source column name
         new_column: New column name
         func: Function to apply for boolean evaluation
-        
+
     Returns:
         DataFrame with new boolean column
     """
@@ -168,14 +168,14 @@ def bool_column(df: pd.DataFrame, column: str, new_column: str, func) -> pd.Data
 def comparison_column(df: pd.DataFrame, column1: str, column2: str, new_column: str, func) -> pd.DataFrame:
     """
     Create comparison column by applying function to two columns.
-    
+
     Args:
         df: Input DataFrame
         column1: First column name
         column2: Second column name
         new_column: New column name
         func: Comparison function to apply
-        
+
     Returns:
         DataFrame with new comparison column
     """
@@ -188,14 +188,14 @@ def comparison_column(df: pd.DataFrame, column1: str, column2: str, new_column: 
 def bin_column(df: pd.DataFrame, column: str, bins: list[int], labels: list[str], new_column: str) -> pd.DataFrame:
     """
     Create binned categorical column from numeric column.
-    
+
     Args:
         df: Input DataFrame
         column: Source column name
         bins: List of bin edges
         labels: List of bin labels
         new_column: New column name
-        
+
     Returns:
         DataFrame with new binned column
     """
@@ -208,14 +208,14 @@ def bin_column(df: pd.DataFrame, column: str, bins: list[int], labels: list[str]
 def bin_time_column(df: pd.DataFrame, column: str, bins: list[int], labels: list[str], new_column: str) -> pd.DataFrame:
     """
     Create binned categorical column from time column.
-    
+
     Args:
         df: Input DataFrame
         column: Source time column name
         bins: List of hour bin edges
         labels: List of bin labels
         new_column: New column name
-        
+
     Returns:
         DataFrame with new binned time column
     """
@@ -230,16 +230,16 @@ def bin_time_column(df: pd.DataFrame, column: str, bins: list[int], labels: list
 def apgar_feature(df: pd.DataFrame) -> pd.DataFrame:
     """
     Create APGAR evolution feature based on 1-minute and 5-minute scores.
-    
+
     Categories:
     - Normal: Both scores >= 7
     - Desconforto Superado: 1min < 7, 5min >= 7 (improved)
     - Desconforto Tardio: 1min >= 7, 5min < 7 (deteriorated)
     - Desconforto Mantido: Both scores < 7 (persistent distress)
-    
+
     Args:
         df: Input DataFrame with APGAR1 and APGAR5 columns
-        
+
     Returns:
         DataFrame with EVOAPGAR categorical column
     """
@@ -266,7 +266,7 @@ def apgar_feature(df: pd.DataFrame) -> pd.DataFrame:
 def save_labels(output_path: str = "data/SINASC/engineered_categorical.json") -> None:
     """
     Save categorical labels for all engineered features to JSON file.
-    
+
     Args:
         output_path: Path to save labels JSON file
     """
@@ -300,17 +300,17 @@ def save_labels(output_path: str = "data/SINASC/engineered_categorical.json") ->
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     """
     Execute complete feature engineering pipeline.
-    
+
     Creates:
     - Boolean indicators (first pregnancy, previous births, father registered)
     - New categorical groupings (occupation categories)
     - Binned numeric features (age groups, weight categories, APGAR categories)
     - Time-based features (birth time periods)
     - APGAR evolution patterns
-    
+
     Args:
         df: Input DataFrame with selected SINASC features
-        
+
     Returns:
         DataFrame with all engineered features added
     """

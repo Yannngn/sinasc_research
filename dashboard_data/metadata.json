@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-03T22:38:18.204681",
+  "generated_at": "2025-10-04T01:06:32.489908",
   "total_years": 6,
   "years": [
     2019,
@@ -37,8 +37,8 @@
         "apgar5_mean": 9.338022636242393
       },
       "delivery_type": {
-        "cesarean_rate_pct": 56.30420483892367,
-        "vaginal_rate_pct": 43.630758128927056
+        "cesarean_pct": 56.30420483892367,
+        "vaginal_pct": 43.630758128927056
       },
       "location": {
         "hospital_birth_pct": 98.48175558570884,
@@ -47,12 +47,25 @@
       "pregnancy": {
         "multiple_pregnancy_pct": 2.2443918282881956,
         "preterm_birth_pct": 11.08511111750679,
+        "extreme_preterm_birth_pct": 0.5600625590966557,
+        "adolescent_pregnancy_pct": 14.715111124526437,
+        "very_young_pregnancy_pct": 0.6785542053653972,
         "gestational_weeks_mean": 38.470925522767345,
         "gestational_weeks_median": 39.0
       },
       "health_indicators": {
         "low_birth_weight_pct": 8.699308494545383,
         "low_apgar5_pct": 1.0077054668311136
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 140122,
+        "Estudante": 1153330,
+        "Trabalhadora Rural": 297333,
+        "Profissionais das Ciências e das Artes": 260315,
+        "Técnicos e Profissionais de Nível Médio": 141850,
+        "Trabalhadores de Serviços Administrativos": 197013,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 289316,
+        "Ignorado": 225700
       }
     },
     {
@@ -77,8 +90,8 @@
         "apgar5_mean": 9.3323307531967
       },
       "delivery_type": {
-        "cesarean_rate_pct": 57.22340754795076,
-        "vaginal_rate_pct": 42.695204833442915
+        "cesarean_pct": 57.22340754795076,
+        "vaginal_pct": 42.695204833442915
       },
       "location": {
         "hospital_birth_pct": 98.34034456045376,
@@ -87,12 +100,25 @@
       "pregnancy": {
         "multiple_pregnancy_pct": 2.2529572605118044,
         "preterm_birth_pct": 11.30716500405656,
+        "extreme_preterm_birth_pct": 0.5482492688117298,
+        "adolescent_pregnancy_pct": 13.979220883872468,
+        "very_young_pregnancy_pct": 0.643885214887854,
         "gestational_weeks_mean": 38.41870546525427,
         "gestational_weeks_median": 39.0
       },
       "health_indicators": {
         "low_birth_weight_pct": 8.582877466215164,
         "low_apgar5_pct": 1.0006794510914254
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 132787,
+        "Estudante": 1099708,
+        "Trabalhadora Rural": 280332,
+        "Profissionais das Ciências e das Artes": 252710,
+        "Técnicos e Profissionais de Nível Médio": 147603,
+        "Trabalhadores de Serviços Administrativos": 188970,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 280462,
+        "Ignorado": 208782
       }
     },
     {
@@ -117,8 +143,8 @@
         "apgar5_mean": 9.315836660330971
       },
       "delivery_type": {
-        "cesarean_rate_pct": 57.01372492109935,
-        "vaginal_rate_pct": 42.93084198168093
+        "cesarean_pct": 57.01372492109935,
+        "vaginal_pct": 42.93084198168093
       },
       "location": {
         "hospital_birth_pct": 98.21908101337978,
@@ -127,12 +153,25 @@
       "pregnancy": {
         "multiple_pregnancy_pct": 2.256022466092986,
         "preterm_birth_pct": 11.353101732060166,
+        "extreme_preterm_birth_pct": 0.5612414324300801,
+        "adolescent_pregnancy_pct": 13.624289856826472,
+        "very_young_pregnancy_pct": 0.6521233229527014,
         "gestational_weeks_mean": 38.42899854423081,
         "gestational_weeks_median": 39.0
       },
       "health_indicators": {
         "low_birth_weight_pct": 8.908218255493535,
         "low_apgar5_pct": 1.0279029442669514
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 138554,
+        "Estudante": 1061792,
+        "Trabalhadora Rural": 285095,
+        "Profissionais das Ciências e das Artes": 247117,
+        "Técnicos e Profissionais de Nível Médio": 154729,
+        "Trabalhadores de Serviços Administrativos": 176718,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 259834,
+        "Ignorado": 216423
       }
     },
     {
@@ -157,8 +196,8 @@
         "apgar5_mean": 9.304887521651727
       },
       "delivery_type": {
-        "cesarean_rate_pct": 58.09790462004698,
-        "vaginal_rate_pct": 41.85478714808647
+        "cesarean_pct": 58.09790462004698,
+        "vaginal_pct": 41.85478714808647
       },
       "location": {
         "hospital_birth_pct": 98.29959694323246,
@@ -167,12 +206,25 @@
       "pregnancy": {
         "multiple_pregnancy_pct": 2.3251683696849477,
         "preterm_birth_pct": 11.84567680046465,
+        "extreme_preterm_birth_pct": 0.5938900559814078,
+        "adolescent_pregnancy_pct": 12.319110417881575,
+        "very_young_pregnancy_pct": 0.557901450551578,
         "gestational_weeks_mean": 38.36354546056031,
         "gestational_weeks_median": 39.0
       },
       "health_indicators": {
         "low_birth_weight_pct": 9.446267294632701,
         "low_apgar5_pct": 1.0200154415317875
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 111893,
+        "Estudante": 957908,
+        "Trabalhadora Rural": 270814,
+        "Profissionais das Ciências e das Artes": 259680,
+        "Técnicos e Profissionais de Nível Médio": 164064,
+        "Trabalhadores de Serviços Administrativos": 184624,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 266797,
+        "Ignorado": 196849
       }
     },
     {
@@ -197,8 +249,8 @@
         "apgar5_mean": 9.2918196663773
       },
       "delivery_type": {
-        "cesarean_rate_pct": 59.585249860496795,
-        "vaginal_rate_pct": 40.37557889891771
+        "cesarean_pct": 59.585249860496795,
+        "vaginal_pct": 40.37557889891771
       },
       "location": {
         "hospital_birth_pct": 98.37415706958137,
@@ -207,12 +259,25 @@
       "pregnancy": {
         "multiple_pregnancy_pct": 2.331752822378522,
         "preterm_birth_pct": 11.958262530856219,
+        "extreme_preterm_birth_pct": 0.5980510534462811,
+        "adolescent_pregnancy_pct": 11.951602631802949,
+        "very_young_pregnancy_pct": 0.5493825603646945,
         "gestational_weeks_mean": 38.3230136003594,
         "gestational_weeks_median": 39.0
       },
       "health_indicators": {
         "low_birth_weight_pct": 9.474947745407428,
         "low_apgar5_pct": 1.0365797911077343
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 102552,
+        "Estudante": 924021,
+        "Trabalhadora Rural": 271405,
+        "Profissionais das Ciências e das Artes": 271963,
+        "Técnicos e Profissionais de Nível Médio": 170093,
+        "Trabalhadores de Serviços Administrativos": 191685,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 272243,
+        "Ignorado": 180826
       }
     },
     {
@@ -237,8 +302,8 @@
         "apgar5_mean": 9.283763445906835
       },
       "delivery_type": {
-        "cesarean_rate_pct": 60.60687582576191,
-        "vaginal_rate_pct": 39.32064738849061
+        "cesarean_pct": 60.60687582576191,
+        "vaginal_pct": 39.32064738849061
       },
       "location": {
         "hospital_birth_pct": 98.49373947471587,
@@ -247,12 +312,25 @@
       "pregnancy": {
         "multiple_pregnancy_pct": 2.3635485129869727,
         "preterm_birth_pct": 12.336982540970624,
+        "extreme_preterm_birth_pct": 0.6045041800256102,
+        "adolescent_pregnancy_pct": 11.443677396003777,
+        "very_young_pregnancy_pct": 0.5026030581840804,
         "gestational_weeks_mean": 38.24007578145158,
         "gestational_weeks_median": 39.0
       },
       "health_indicators": {
         "low_birth_weight_pct": 9.490653680431356,
         "low_apgar5_pct": 1.0141882821231893
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 88402,
+        "Estudante": 802109,
+        "Trabalhadora Rural": 244893,
+        "Profissionais das Ciências e das Artes": 256150,
+        "Técnicos e Profissionais de Nível Médio": 158668,
+        "Trabalhadores de Serviços Administrativos": 176934,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 247205,
+        "Ignorado": 146636
       }
     }
   ],
@@ -286,14 +364,15 @@
       "APGAR5",
       "IDADEMAEBIN",
       "PESOBIN",
-      "DESLOCNASCBOOL"
+      "DESLOCNASCBOOL",
+      "OCUPMAE"
     ],
     "aggregate_metrics": [
       "total_births",
       "PESO_mean",
       "PESO_median",
       "IDADEMAE_mean",
-      "cesarean_rate_pct",
+      "cesarean_pct",
       "hospital_birth_pct"
     ]
   }

@@ -85,7 +85,7 @@ CATEGORY_LABELS = {
 # Metric display names
 METRIC_NAMES = {
     "total_births": "Total de Nascimentos",
-    "cesarean_rate_pct": "Taxa de Cesárea (%)",
+    "cesarean_pct": "Taxa de Cesárea (%)",
     "hospital_birth_pct": "Nascimentos em Hospital (%)",
     "multiple_pregnancy_pct": "Gravidez Múltipla (%)",
     "preterm_rate_pct": "Taxa de Prematuridade (%)",

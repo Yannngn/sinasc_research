@@ -9,6 +9,8 @@ from typing import Dict, List, Optional
 import pandas as pd
 from config.settings import AGGREGATES_DIR, CACHE_SIZE, METADATA_PATH, YEARS_DIR
 
+MONTH_NAMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+
 
 class DataLoader:
     """Efficient data loader with caching for dashboard."""
@@ -70,6 +72,7 @@ class DataLoader:
         if "year_month" in df.columns:
             df["year_month"] = pd.to_datetime(df["year_month"])
             df["month"] = df["year_month"].dt.month
+            df["month_label"] = df["month"].apply(lambda x: MONTH_NAMES[x - 1])
         return df
 
     @lru_cache(maxsize=10)
@@ -109,7 +112,10 @@ class DataLoader:
             DataFrame with yearly aggregates
         """
         file_path = AGGREGATES_DIR / "yearly.parquet"
-        return pd.read_parquet(file_path)
+
+        df = pd.read_parquet(file_path)
+
+        return df
 
     @lru_cache(maxsize=1)
     def load_combined_yearly(self) -> pd.DataFrame:

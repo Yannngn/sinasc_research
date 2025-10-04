@@ -3,14 +3,19 @@ Annual Analysis page - Detailed dashboard for a specific year.
 """
 
 import dash_bootstrap_components as dbc
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from components.charts import (
+    create_line_chart,
+    create_multi_line_chart,
+    create_simple_bar_chart,
+    create_stacked_bar_chart,
+)
 from config.constants import CHART_TITLES
 from config.settings import CHART_CONFIG, CHART_HEIGHT, COLOR_PALETTE
 from dash import Input, Output, dcc, html
 from data.loader import data_loader
-
-MONTH_NAMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
 
 def create_metric_card(title: str, value: str, icon: str, color: str = "primary") -> dbc.Card:
@@ -62,7 +67,7 @@ def create_layout() -> html.Div:
                 [
                     dbc.Col(
                         [
-                            html.H1("� Análise Anual", className="mb-2"),
+                            html.H1("📅 Análise Anual", className="mb-2"),
                             html.P("Detalhamento de Nascimentos por Ano", className="lead text-muted mb-4"),
                         ]
                     )
@@ -488,7 +493,7 @@ def create_layout() -> html.Div:
                                             dbc.CardBody(
                                                 [
                                                     dcc.Graph(
-                                                        id="annual-maternal-age-chart",
+                                                        id="annual-maternal-ocupation-chart",
                                                         config=CHART_CONFIG,  # type:ignore
                                                         style={"height": f"{CHART_HEIGHT}px"},
                                                     )
@@ -555,13 +560,13 @@ def register_callbacks(app):
         total_births = summary.get("total_births", 0)
         formatted_births = f"{total_births:_}".replace("_", ".")
 
-        maternal_age = summary.get("maternal_age", {}).get("mean", 0)
+        maternal_age = summary.get("pregnancy", {}).get("adolescent_pregnancy_pct", 0)
         formatted_age = f"{maternal_age:.1f}".replace(".", ",")
 
-        birth_weight = summary.get("birth_weight", {}).get("mean", 0)
-        formatted_weight = f"{birth_weight:.0f}"
+        very_young_pregnancy_rate = summary.get("pregnancy", {}).get("very_young_pregnancy_pct", 0)
+        formatted_very_young = f"{very_young_pregnancy_rate:.1f}".replace(".", ",")
 
-        cesarean_rate = summary.get("delivery_type", {}).get("cesarean_rate_pct", 0)
+        cesarean_rate = summary.get("delivery_type", {}).get("cesarean_pct", 0)
         formatted_cesarean = f"{cesarean_rate:.1f}".replace(".", ",")
 
         low_weight_rate = summary.get("health_indicators", {}).get("low_birth_weight_pct", 0)
@@ -599,8 +604,8 @@ def register_callbacks(app):
                     html.Div(
                         [
                             html.I(className="fas fa-female fa-2x text-info mb-2"),
-                            html.H4(f"{formatted_age} anos", className="text-info fw-bold mb-1"),
-                            html.P("Idade Materna Média", className="text-muted mb-0 small"),
+                            html.H4(f"{formatted_age}%", className="text-info fw-bold mb-1"),
+                            html.P("Taxa de Gestações Abaixo de 20 anos", className="text-muted mb-0 small"),
                         ],
                         className="text-center",
                     )
@@ -614,9 +619,9 @@ def register_callbacks(app):
                 [
                     html.Div(
                         [
-                            html.I(className="fas fa-weight fa-2x text-success mb-2"),
-                            html.H4(f"{formatted_weight}g", className="text-success fw-bold mb-1"),
-                            html.P("Peso Médio ao Nascer", className="text-muted mb-0 small"),
+                            html.I(className="fas fa-child fa-2x text-success mb-2"),
+                            html.H4(f"{formatted_very_young}%", className="text-success fw-bold mb-1"),
+                            html.P("Taxa de Gestações Abaixo de 15 anos", className="text-muted mb-0 small"),
                         ],
                         className="text-center",
                     )
@@ -712,32 +717,13 @@ def register_callbacks(app):
         """Update timeline chart based on selected year with vertical month labels."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=monthly_data["month_label"],
-                y=monthly_data["total_births"],
-                text=[f"{int(val):_}".replace("_", ".") for val in monthly_data["total_births"]],
-                textposition="inside",
-                marker_color=COLOR_PALETTE["primary"],
-                name="Nascimentos",
-                textfont=dict(size=11, color="white"),
-            )
-        )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Número de Nascimentos",
-            showlegend=False,
-            yaxis=dict(rangemode="tozero"),
-            template="plotly_white",
-            hovermode="x unified",
-            xaxis=dict(
-                tickangle=0,  # Keep horizontal since we use short labels
-            ),
+        fig = create_simple_bar_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="total_births",
+            x_title="Mês",
+            y_title="Número de Nascimentos",
+            color="primary",
         )
 
         return fig
@@ -747,33 +733,16 @@ def register_callbacks(app):
         """Update monthly cesarean absolute count chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        # Create month labels
-
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        # Calculate cesarean count if not present
         if "cesarean_count" not in monthly_data.columns:
-            monthly_data["cesarean_count"] = (monthly_data["total_births"] * monthly_data["cesarean_rate_pct"] / 100).round().astype(int)
+            monthly_data["cesarean_count"] = monthly_data["cesarean_pct"].mul(monthly_data["total_births"]).round().astype(int)
 
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=monthly_data["month_label"],
-                y=monthly_data["cesarean_count"],
-                text=[f"{int(val):_}".replace("_", ".") for val in monthly_data["cesarean_count"]],
-                textposition="inside",
-                marker_color=COLOR_PALETTE["warning"],
-                textfont=dict(size=10, color="white"),
-            )
-        )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Número de Cesáreas",
-            showlegend=False,
-            yaxis=dict(rangemode="tozero"),
-            template="plotly_white",
+        fig = create_simple_bar_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="cesarean_count",
+            x_title="Mês",
+            y_title="Número de Cesáreas",
+            color="warning",
         )
 
         return fig
@@ -783,41 +752,15 @@ def register_callbacks(app):
         """Update monthly cesarean rate chart."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        # Create month labels
-
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["cesarean_rate_pct"],
-                mode="lines+markers",
-                line=dict(color=COLOR_PALETTE["warning"], width=3),
-                marker=dict(size=10),
-                name="Taxa de Cesárea",
-            )
+        fig = create_line_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="cesarean_pct",
+            x_title="Mês",
+            y_title="Taxa de Cesárea (%)",
+            color="warning",
+            reference_line={"y": 15, "text": "Referência OMS", "color": "danger"},
         )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Taxa de Cesárea (%)",
-            showlegend=False,
-            yaxis=dict(rangemode="tozero"),
-            template="plotly_white",
-            margin=dict(r=125),
-        )
-
-        # Add WHO reference line
-        fig.add_hline(
-            y=15,
-            line_dash="dash",
-            line_color=COLOR_PALETTE["danger"],
-            annotation_text="Recomendação OMS",
-            annotation_position="right",
-        )
-
         return fig
 
     @app.callback(Output("annual-absolute-preterm-chart", "figure"), Input("annual-year-dropdown", "value"))
@@ -825,205 +768,125 @@ def register_callbacks(app):
         """Update monthly preterm births absolute count chart with stacked bars."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        # Create month labels
-
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        # Use existing count columns
+        # Calculate moderate preterm
         monthly_data["moderate_preterm_count"] = monthly_data["preterm_birth_count"] - monthly_data["extreme_preterm_birth_count"]
 
-        fig = go.Figure()
-
-        # Add moderate preterm
-        fig.add_trace(
-            go.Bar(
-                x=monthly_data["month_label"],
-                y=monthly_data["moderate_preterm_count"],
-                name="Prematuros Moderados (32-36 sem)",
-                marker_color=COLOR_PALETTE["warning"],
-                text=[f"{int(val):_}".replace("_", ".") for val in monthly_data["moderate_preterm_count"]],
-                textposition="inside",
-                textfont=dict(size=9, color="white"),
-            )
+        return create_stacked_bar_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_cols=["moderate_preterm_count", "extreme_preterm_birth_count"],
+            labels=["Prematuros Moderados (32-36 sem)", "Prematuros Extremos (<32 sem)"],
+            colors=["warning", "danger"],
+            x_title="Mês",
+            y_title="Número de Nascimentos Prematuros",
+            text_size=9,
         )
-
-        # Add extreme preterm
-        fig.add_trace(
-            go.Bar(
-                x=monthly_data["month_label"],
-                y=monthly_data["extreme_preterm_birth_count"],
-                name="Prematuros Extremos (<32 sem)",
-                marker_color=COLOR_PALETTE["danger"],
-                text=[f"{int(val):_}".replace("_", ".") for val in monthly_data["extreme_preterm_birth_count"]],
-                textposition="outside",
-                textfont=dict(size=9),
-            )
-        )
-
-        max_value = monthly_data["preterm_birth_count"].max()
-        y_axis_max = max_value * 1.25
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Número de Nascimentos Prematuros",
-            barmode="stack",
-            yaxis=dict(range=[0, y_axis_max]),
-            template="plotly_white",
-            legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
-        )
-
-        return fig
 
     @app.callback(Output("annual-relative-preterm-chart", "figure"), Input("annual-year-dropdown", "value"))
     def update_relative_preterm_chart(year: int):
         """Update monthly preterm birth rate chart with multiple lines."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        # Create month labels
-
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = go.Figure()
-
-        # Add total preterm line
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["preterm_birth_pct"],
-                mode="lines+markers",
-                name="Prematuros Total (<37 sem)",
-                line=dict(color=COLOR_PALETTE["warning"], width=3),
-                marker=dict(size=10),
-            )
+        return create_multi_line_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_cols=["preterm_birth_pct", "extreme_preterm_birth_pct"],
+            labels=["Prematuros Total (<37 sem)", "Prematuros Extremos (<32 sem)"],
+            colors=["warning", "danger"],
+            x_title="Mês",
+            y_title="Taxa de Prematuridade (%)",
+            reference_line={"y": 10, "text": "Referência OMS", "color": "neutral"},
         )
-
-        # Add extreme preterm line
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["extreme_preterm_birth_pct"],
-                mode="lines+markers",
-                name="Prematuros Extremos (<32 sem)",
-                line=dict(color=COLOR_PALETTE["danger"], width=3),
-                marker=dict(size=10),
-            )
-        )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Taxa de Prematuridade (%)",
-            yaxis=dict(rangemode="tozero"),
-            template="plotly_white",
-            legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
-            margin=dict(r=125),
-        )
-
-        # Add WHO reference line
-        fig.add_hline(
-            y=10,
-            line_dash="dash",
-            line_color=COLOR_PALETTE["neutral"],
-            annotation_text="Referência OMS",
-            annotation_position="right",
-        )
-
-        return fig
 
     @app.callback(Output("annual-absolute-adolescent-chart", "figure"), Input("annual-year-dropdown", "value"))
     def update_absolute_adolescent_chart(year: int):
         """Update monthly adolescent pregnancy absolute count chart with stacked bars."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        # Create month labels
-
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
+        # Calculate older adolescent count
         monthly_data["older_adolescent_count"] = monthly_data["adolescent_pregnancy_count"] - monthly_data["very_young_pregnancy_count"]
 
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=monthly_data["month_label"],
-                y=monthly_data["older_adolescent_count"],
-                name="Adolescentes 15-19 anos",
-                marker_color=COLOR_PALETTE["info"],
-                text=[f"{int(val):_}".replace("_", ".") for val in monthly_data["older_adolescent_count"]],
-                textposition="inside",
-                textfont=dict(size=9, color="white"),
-            )
+        return create_stacked_bar_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_cols=["older_adolescent_count", "very_young_pregnancy_count"],
+            labels=["Adolescentes 15-19 anos", "Menores de 15 anos"],
+            colors=["info", "danger"],
+            x_title="Mês",
+            y_title="Número de Gestações em Adolescentes",
+            text_size=9,
         )
-
-        fig.add_trace(
-            go.Bar(
-                x=monthly_data["month_label"],
-                y=monthly_data["very_young_pregnancy_count"],
-                name="Menores de 15 anos",
-                marker_color=COLOR_PALETTE["danger"],
-                text=[f"{int(val):_}".replace("_", ".") for val in monthly_data["very_young_pregnancy_count"]],
-                textposition="outside",
-                textfont=dict(size=9),
-            )
-        )
-
-        max_value = monthly_data["adolescent_pregnancy_count"].max()
-        y_axis_max = max_value * 1.25
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Número de Gestações em Adolescentes",
-            barmode="stack",
-            yaxis=dict(range=[0, y_axis_max]),
-            template="plotly_white",
-            legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
-        )
-
-        return fig
 
     @app.callback(Output("annual-relative-adolescent-chart", "figure"), Input("annual-year-dropdown", "value"))
     def update_relative_adolescent_chart(year: int):
         """Update monthly adolescent pregnancy rate chart with multiple lines."""
         monthly_data = data_loader.load_monthly_aggregates(year)
 
-        # Create month labels
-
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = go.Figure()
-
-        # Add total adolescent line
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["adolescent_pregnancy_pct"],
-                mode="lines+markers",
-                name="Adolescentes Total (<20 anos)",
-                line=dict(color=COLOR_PALETTE["info"], width=3),
-                marker=dict(size=10),
-            )
+        return create_multi_line_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_cols=["adolescent_pregnancy_pct", "very_young_pregnancy_pct"],
+            labels=["Adolescentes Total (<20 anos)", "Menores de 15 anos"],
+            colors=["info", "danger"],
+            x_title="Mês",
+            y_title="Taxa de Gravidez na Adolescência (%)",
         )
 
-        # Add very young line
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["very_young_pregnancy_pct"],
-                mode="lines+markers",
-                name="Menores de 15 anos",
-                line=dict(color=COLOR_PALETTE["danger"], width=3),
-                marker=dict(size=10),
-            )
+    @app.callback(Output("annual-absolute-low-weight-chart", "figure"), Input("annual-year-dropdown", "value"))
+    def update_absolute_low_weight_chart(year: int):
+        """Update monthly low birth weight absolute numbers chart."""
+        monthly_data = data_loader.load_monthly_aggregates(year)
+
+        return create_simple_bar_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="low_birth_weight_count",
+            x_title="Mês",
+            y_title="Número de Nascimentos <2.500g",
+            color="warning",
         )
 
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Taxa de Gravidez na Adolescência (%)",
-            yaxis=dict(rangemode="tozero"),
-            template="plotly_white",
-            legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
+    @app.callback(Output("annual-relative-low-weight-chart", "figure"), Input("annual-year-dropdown", "value"))
+    def update_relative_low_weight_chart(year: int):
+        """Update monthly low birth weight rate chart."""
+        monthly_data = data_loader.load_monthly_aggregates(year)
+
+        return create_line_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="low_birth_weight_pct",
+            x_title="Mês",
+            y_title="Taxa de Baixo Peso ao Nascer (%)",
+            color="warning",
         )
 
-        return fig
+    @app.callback(Output("annual-absolute-low-apgar-chart", "figure"), Input("annual-year-dropdown", "value"))
+    def update_absolute_low_apgar_chart(year: int):
+        """Update monthly low APGAR5 absolute numbers chart."""
+        monthly_data = data_loader.load_monthly_aggregates(year)
+
+        return create_simple_bar_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="low_apgar5_count",
+            x_title="Mês",
+            y_title="Número de APGAR5 <7",
+            color="danger",
+        )
+
+    @app.callback(Output("annual-relative-low-apgar-chart", "figure"), Input("annual-year-dropdown", "value"))
+    def update_relative_low_apgar_chart(year: int):
+        """Update monthly low APGAR5 rate chart."""
+        monthly_data = data_loader.load_monthly_aggregates(year)
+
+        return create_line_chart(
+            df=monthly_data,
+            x_col="month_label",
+            y_col="low_apgar5_pct",
+            x_title="Mês",
+            y_title="Taxa de APGAR5 Baixo (%)",
+            color="danger",
+        )
 
     @app.callback(Output("annual-delivery-type-chart", "figure"), Input("annual-year-dropdown", "value"))
     def update_delivery_type_chart(year: int):
@@ -1032,7 +895,7 @@ def register_callbacks(app):
         delivery_type = summary.get("delivery_type", {})
 
         # Create pie chart data
-        values = [delivery_type.get("vaginal_rate_pct", 0), delivery_type.get("cesarean_rate_pct", 0)]
+        values = [delivery_type.get("vaginal_pct", 0), delivery_type.get("cesarean_pct", 0)]
         labels = ["Vaginal", "Cesárea"]
         colors = [COLOR_PALETTE["primary"], COLOR_PALETTE["secondary"]]
 
@@ -1049,154 +912,106 @@ def register_callbacks(app):
 
         return fig
 
-    @app.callback(Output("annual-maternal-age-chart", "figure"), Input("annual-year-dropdown", "value"))
-    def update_maternal_age_chart(year: int):
-        """Update maternal age distribution chart."""
-        # Load essential data with only needed column
-        df = data_loader.load_essential_data(year, columns=["IDADEMAE"])
+    @app.callback(Output("annual-maternal-ocupation-chart", "figure"), Input("annual-year-dropdown", "value"))
+    def update_maternal_occupation_chart(year: int):
+        """
+        Update maternal occupation distribution chart using metadata summary.
 
-        # Remove invalid values
-        df_clean = df[df["IDADEMAE"] > 0]
+        Args:
+            year: Selected year for data filtering
 
-        fig = px.histogram(
-            df_clean,
-            x="IDADEMAE",
-            nbins=40,
-            title=CHART_TITLES["maternal_age"],
-            labels={"IDADEMAE": "Idade (anos)", "count": "Frequência"},
-            template="plotly_white",
-            color_discrete_sequence=[COLOR_PALETTE["info"]],
+        Returns:
+            Plotly figure object for the pie chart
+        """
+        summary = data_loader.get_year_summary(year)
+        maternal_occupation = summary.get("maternal_occupation", {})
+
+        # Build a clean DataFrame: expected structure is {code: {"label": str, "count": int}}
+        rows = []
+        if isinstance(maternal_occupation, dict):
+            for code, info in maternal_occupation.items():
+                if isinstance(info, dict):
+                    label = info.get("label", str(code))
+                    count = int(info.get("count", 0) or 0)
+                else:
+                    # backward compatibility: if value is just a count
+                    label = str(code)
+                    try:
+                        count = int(info)
+                    except Exception:
+                        count = 0
+
+                rows.append({"code": str(code), "label": label, "count": count})
+
+        occupation_counts = pd.DataFrame(rows)
+
+        # Remove zero counts (they clutter the pie) and sort by count desc
+        if not occupation_counts.empty:
+            occupation_counts = occupation_counts[occupation_counts["count"] > 0].sort_values("count", ascending=False)
+
+        # Prepare colors (cycle pastel palette if necessary)
+        palette = px.colors.qualitative.Pastel
+        colors = [palette[i % len(palette)] for i in range(len(occupation_counts))]
+
+        # Create pie chart with smaller text and tighter margins so the pie fills the card
+        fig = go.Figure(
+            data=[
+                go.Pie(
+                    labels=occupation_counts["label"],
+                    values=occupation_counts["count"],
+                    hole=0.4,
+                    textinfo="label+percent",
+                    textposition="inside",
+                    marker=dict(colors=colors, line=dict(color="white", width=0.5)),
+                )
+            ]
         )
 
-        fig.update_layout(xaxis_title="Idade Materna (anos)", yaxis_title="Número de Nascimentos", showlegend=False, bargap=0.1)
-
-        # Add mean line
-        mean_age = df_clean["IDADEMAE"].mean()
-        fig.add_vline(
-            x=mean_age,
-            line_dash="dash",
-            line_color=COLOR_PALETTE["danger"],
-            annotation_text=f"Média: {mean_age:.1f}",
-            annotation_position="top",
-        )
-
-        return fig
-
-    @app.callback(Output("annual-absolute-low-weight-chart", "figure"), Input("annual-year-dropdown", "value"))
-    def update_absolute_low_weight_chart(year: int):
-        """Update monthly low birth weight absolute numbers chart."""
-        monthly_data = data_loader.load_monthly_aggregates(year)
-
-        # Create month labels
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = px.bar(
-            monthly_data,
-            x="month_label",
-            y="low_birth_weight_count",
-            text="low_birth_weight_count",
-            template="plotly_white",
-            color_discrete_sequence=[COLOR_PALETTE["warning"]],
-        )
-
-        fig.update_traces(texttemplate="%{text:_}".replace("_", "."), textposition="outside")
+        fig.update_traces(textfont_size=12, insidetextorientation="radial")
 
         fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Número de Nascimentos <2.500g",
-            showlegend=False,
-        )
-
-        return fig
-
-    @app.callback(Output("annual-relative-low-weight-chart", "figure"), Input("annual-year-dropdown", "value"))
-    def update_relative_low_weight_chart(year: int):
-        """Update monthly low birth weight rate chart."""
-        monthly_data = data_loader.load_monthly_aggregates(year)
-
-        # Create month labels
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["low_birth_weight_pct"],
-                mode="lines+markers",
-                name="Taxa de Baixo Peso",
-                line=dict(color=COLOR_PALETTE["warning"], width=3),
-                marker=dict(size=10),
-            )
-        )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Taxa de Baixo Peso ao Nascer (%)",
-            yaxis=dict(rangemode="tozero"),
+            title="Distribuição de Ocupação Materna",
             template="plotly_white",
             showlegend=False,
+            legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.02),
+            margin=dict(t=40, b=10, l=10, r=80),
+            height=int(CHART_HEIGHT),
         )
 
         return fig
 
-    @app.callback(Output("annual-absolute-low-apgar-chart", "figure"), Input("annual-year-dropdown", "value"))
-    def update_absolute_low_apgar_chart(year: int):
-        """Update monthly low APGAR5 absolute numbers chart."""
-        monthly_data = data_loader.load_monthly_aggregates(year)
+    # @app.callback(Output("annual-maternal-age-chart", "figure"), Input("annual-year-dropdown", "value"))
+    # def update_maternal_age_chart(year: int):
+    #     """Update maternal age distribution chart."""
+    #     # Load essential data with only needed column
+    #     df = data_loader.load_essential_data(year, columns=["IDADEMAE"])
 
-        # Create month labels
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
+    #     # Remove invalid values
+    #     df_clean = df[df["IDADEMAE"] > 0]
 
-        fig = px.bar(
-            monthly_data,
-            x="month_label",
-            y="low_apgar5_count",
-            text="low_apgar5_count",
-            template="plotly_white",
-            color_discrete_sequence=[COLOR_PALETTE["danger"]],
-        )
+    #     fig = px.histogram(
+    #         df_clean,
+    #         x="IDADEMAE",
+    #         nbins=40,
+    #         title=CHART_TITLES["maternal_age"],
+    #         labels={"IDADEMAE": "Idade (anos)", "count": "Frequência"},
+    #         template="plotly_white",
+    #         color_discrete_sequence=[COLOR_PALETTE["info"]],
+    #     )
 
-        fig.update_traces(texttemplate="%{text:_}".replace("_", "."), textposition="outside")
+    #     fig.update_layout(xaxis_title="Idade Materna (anos)", yaxis_title="Número de Nascimentos", showlegend=False, bargap=0.1)
 
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Número de APGAR5 <7",
-            showlegend=False,
-        )
+    #     # Add mean line
+    #     mean_age = df_clean["IDADEMAE"].mean()
+    #     fig.add_vline(
+    #         x=mean_age,
+    #         line_dash="dash",
+    #         line_color=COLOR_PALETTE["danger"],
+    #         annotation_text=f"Média: {mean_age:.1f}",
+    #         annotation_position="top",
+    #     )
 
-        return fig
-
-    @app.callback(Output("annual-relative-low-apgar-chart", "figure"), Input("annual-year-dropdown", "value"))
-    def update_relative_low_apgar_chart(year: int):
-        """Update monthly low APGAR5 rate chart."""
-        monthly_data = data_loader.load_monthly_aggregates(year)
-
-        # Create month labels
-        monthly_data["month_label"] = monthly_data["month"].apply(lambda x: MONTH_NAMES[x - 1])
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=monthly_data["month_label"],
-                y=monthly_data["low_apgar5_pct"],
-                mode="lines+markers",
-                name="Taxa de APGAR5 Baixo",
-                line=dict(color=COLOR_PALETTE["danger"], width=3),
-                marker=dict(size=10),
-            )
-        )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Taxa de APGAR5 <7 (%)",
-            yaxis=dict(rangemode="tozero"),
-            template="plotly_white",
-            showlegend=False,
-        )
-
-        return fig
+    #     return fig
 
 
 # Layout for routing

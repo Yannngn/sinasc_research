@@ -30,15 +30,23 @@ MAP_HEIGHT = 600
 
 TEMPLATE = "plotly_white"
 
-# Color palette (healthcare theme)
+# Modern Color Palette (Healthcare Analytics Design System)
 COLOR_PALETTE = {
-    "primary": "#1f77b4",  # Blue
-    "secondary": "#ff7f0e",  # Orange
-    "success": "#2ca02c",  # Green
-    "danger": "#d62728",  # Red
-    "warning": "#ffbb00",  # Yellow
-    "info": "#17becf",  # Cyan
-    "neutral": "#7f7f7f",  # Gray
+    "primary": "#2196f3",  # Blue - Main brand color
+    "primary_dark": "#1976d2",  # Darker blue for emphasis
+    "primary_light": "#64b5f6",  # Lighter blue for backgrounds
+    "secondary": "#ff9800",  # Orange - Secondary actions
+    "success": "#4caf50",  # Green - Positive indicators
+    "success_light": "#81c784",  # Light green
+    "danger": "#f44336",  # Red - Alerts and critical values
+    "danger_light": "#e57373",  # Light red
+    "warning": "#ff9800",  # Orange - Warnings
+    "warning_dark": "#f57c00",  # Dark orange
+    "info": "#00bcd4",  # Cyan - Informational
+    "info_dark": "#0097a7",  # Dark cyan
+    "neutral": "#9e9e9e",  # Gray - Neutral elements
+    "gray_light": "#f5f5f5",  # Very light gray for backgrounds
+    "gray_dark": "#616161",  # Dark gray for text
 }
 
 # Delivery type colors
@@ -59,25 +67,54 @@ NUMBER_FORMAT = {
     "decimal_sep": ",",
 }
 
-# Common chart layout settings
+# Common chart layout settings (Modern Design System)
 COMMON_LAYOUT = {
     "template": TEMPLATE,
-    "xaxis": dict(tickmode="linear", dtick=1),
-    "font": dict(family="Arial, sans-serif"),
+    "xaxis": dict(
+        tickmode="linear",
+        dtick=1,
+        showgrid=False,
+        showline=True,
+        linewidth=2,
+        linecolor="#e0e0e0",
+    ),
+    "yaxis": dict(
+        showgrid=True,
+        gridwidth=1,
+        gridcolor="#f5f5f5",
+        showline=False,
+    ),
+    "font": dict(
+        family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        size=13,
+        color="#424242",
+    ),
     "hovermode": "x unified",
+    "hoverlabel": dict(
+        bgcolor="white",
+        font_size=13,
+        font_family="Inter, sans-serif",
+        bordercolor="#e0e0e0",
+    ),
+    "plot_bgcolor": "white",
+    "paper_bgcolor": "white",
+    "margin": dict(l=60, r=40, t=60, b=60),
 }
 
 # Bar chart text settings
 BAR_TEXT_CONFIG = {
     "texttemplate": "%{text:,.0f}".replace(",", "."),  # Brazilian format with dots
-    "textfont": dict(size=12, color="white"),
+    "textfont": dict(size=12, color="white", family="Inter"),
 }
 
-# Legend settings
+# Legend settings (Modern positioning)
 LEGEND_CONFIG = {
     "orientation": "h",
-    "yanchor": "bottom",
-    "y": 1.02,
-    "xanchor": "right",
-    "x": 1,
+    "y": -0.25,
+    "xanchor": "center",
+    "x": 0.5,
+    "bgcolor": "rgba(255, 255, 255, 0.8)",
+    "bordercolor": "#e0e0e0",
+    "borderwidth": 1,
+    "font": dict(size=12),
 }

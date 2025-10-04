@@ -82,7 +82,7 @@ def load_data(year: int, output_dir: str, overwrite: bool = False):
     parquet_file = os.path.join(path_, "raw.parquet")
 
     if overwrite or not file_exists(parquet_file):
-        _request(year, path_)
+        _request(year, parquet_file)
 
     return pd.read_parquet(parquet_file)
 

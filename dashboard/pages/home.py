@@ -3,15 +3,13 @@ Home page - Multi-year comparison and overview statistics.
 """
 
 import dash_bootstrap_components as dbc
-import plotly.express as px
-from config.settings import (
-    CHART_CONFIG,
-    CHART_HEIGHT,
-    COLOR_PALETTE,
-    COMMON_LAYOUT,
-    LEGEND_CONFIG,
-    TEMPLATE,
+from components.charts import (
+    create_line_chart,
+    create_multi_line_chart,
+    create_simple_bar_chart,
+    create_stacked_bar_chart,
 )
+from config.settings import CHART_CONFIG, CHART_HEIGHT
 from dash import Input, Output, dcc, html
 from data.loader import data_loader
 
@@ -35,7 +33,7 @@ def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
     low_birth_weight_rate = summary.get("health_indicators", {}).get("low_birth_weight_pct", 0)
     adolescent_pregnancy_rate = summary.get("pregnancy", {}).get("adolescent_pregnancy_pct", 0)
     low_apgar5_rate = summary.get("health_indicators", {}).get("low_apgar5_pct", 0)
-    cesarean_rate = summary.get("delivery_type", {}).get("cesarean_rate_pct", 0)
+    cesarean_rate = summary.get("delivery_type", {}).get("cesarean_pct", 0)
     preterm_rate = summary.get("pregnancy", {}).get("preterm_birth_pct", 0)
     hospital_rate = summary.get("location", {}).get("hospital_birth_pct", 0)
 
@@ -172,11 +170,29 @@ def create_layout() -> html.Div:
                         [
                             html.Div(
                                 [
-                                    html.H1("📊 SINASC Dashboard", className="mb-2 text-primary fw-bold"),
-                                    html.P("Sistema de Informações sobre Nascidos Vivos - Visão Geral", className="lead text-muted mb-1"),
-                                    html.P("Análise Comparativa entre Anos", className="text-muted"),
+                                    html.Div(
+                                        [
+                                            html.H1("📊 SINASC Dashboard", className="mb-3", style={"color": "#2196f3", "fontWeight": "800"}),
+                                            html.P(
+                                                "Sistema de Informações sobre Nascidos Vivos",
+                                                className="lead mb-2",
+                                                style={"color": "#616161", "fontSize": "1.25rem"},
+                                            ),
+                                            html.P(
+                                                "Análise Comparativa de Indicadores de Saúde Perinatal (2019-2024)",
+                                                className="text-muted",
+                                                style={"fontSize": "1rem"},
+                                            ),
+                                        ],
+                                        className="text-center mb-4 p-4",
+                                        style={
+                                            "background": "linear-gradient(135deg, #f5f5f5 0%, white 100%)",
+                                            "borderRadius": "12px",
+                                            "border": "2px solid #e3f2fd",
+                                        },
+                                    )
                                 ],
-                                className="text-center mb-4",
+                                className="mb-4",
                             )
                         ]
                     )
@@ -187,7 +203,14 @@ def create_layout() -> html.Div:
                 [
                     dbc.Col(
                         [
-                            html.H4("📅 Resumo por Ano", className="mb-3 fw-bold text-secondary"),
+                            html.Div(
+                                [
+                                    html.H4("📅 Resumo por Ano", className="mb-0", style={"color": "#424242", "fontWeight": "700"}),
+                                    html.P("Principais indicadores de qualidade perinatal", className="text-muted small mb-0 mt-1"),
+                                ],
+                                className="mb-3",
+                                style={"borderLeft": "4px solid #2196f3", "paddingLeft": "16px"},
+                            ),
                         ]
                     )
                 ]
@@ -198,7 +221,14 @@ def create_layout() -> html.Div:
                 [
                     dbc.Col(
                         [
-                            html.H4("📈 Análise Temporal", className="mb-3 fw-bold text-secondary"),
+                            html.Div(
+                                [
+                                    html.H4("📈 Análise Temporal", className="mb-0", style={"color": "#424242", "fontWeight": "700"}),
+                                    html.P("Evolução dos indicadores ao longo dos anos", className="text-muted small mb-0 mt-1"),
+                                ],
+                                className="mb-3 mt-4",
+                                style={"borderLeft": "4px solid #2196f3", "paddingLeft": "16px"},
+                            ),
                         ]
                     )
                 ]
@@ -511,99 +541,49 @@ def register_callbacks(app):
     )
     def update_births_evolution(_):
         """Update births evolution chart with text inside bars."""
-        import plotly.graph_objects as go
-
-        # Load yearly aggregates
         df = data_loader.load_yearly_aggregates()
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=df["year"],
-                y=df["total_births"],
-                text=[f"{int(val):_}".replace("_", ".") for val in df["total_births"]],
-                textposition="inside",
-                marker_color=COLOR_PALETTE["primary"],
-                name="Nascimentos",
-                textfont=dict(size=12, color="white"),
-            )
+        return create_simple_bar_chart(
+            df=df,
+            x_col="year",
+            y_col="total_births",
+            x_title="Ano",
+            y_title="Número de Nascimentos",
+            color="primary",
         )
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Número de Nascimentos",
-            showlegend=False,
-            yaxis=dict(rangemode="tozero"),
-        )
-
-        return fig
 
     @app.callback(Output("home-absolute-cesarean-comparison", "figure"), Input("url", "pathname"))
     def update_absolute_cesarean_comparison(_):
         """Update indicators comparison chart with cesarean absolute values."""
-        import plotly.graph_objects as go
-
         df = data_loader.load_yearly_aggregates()
 
         # Calculate absolute cesarean count if not present
-        if "cesarean_count" not in df.columns:
-            df["cesarean_count"] = (df["total_births"] * df["cesarean_rate_pct"] / 100).round().astype(int)
 
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=df["year"],
-                y=df["cesarean_count"],
-                text=[f"{int(val):_}".replace("_", ".") for val in df["cesarean_count"]],
-                textposition="inside",
-                marker_color=COLOR_PALETTE["warning"],
-                textfont=dict(size=12, color="white"),
-            )
+        return create_simple_bar_chart(
+            df=df,
+            x_col="year",
+            y_col="cesarean_count",
+            x_title="Ano",
+            y_title="Número de Cesáreas",
+            color="warning",
         )
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Número de Cesáreas",
-            showlegend=False,
-            yaxis=dict(rangemode="tozero"),
-        )
-
-        return fig
 
     @app.callback(Output("home-relative-cesarean-comparison", "figure"), Input("url", "pathname"))
     def update_cesarean_comparison(_):
         """Update cesarean rate comparison chart."""
         df = data_loader.load_yearly_aggregates()
 
-        fig = px.line(
-            df,
-            x="year",
-            y="cesarean_rate_pct",
-            labels={"year": "Ano", "cesarean_rate_pct": "Taxa (%)"},
-            template=TEMPLATE,
-            markers=True,
-            color_discrete_sequence=[COLOR_PALETTE["warning"]],
+        fig = create_line_chart(
+            df=df,
+            x_col="year",
+            y_col="cesarean_pct",
+            x_title="Ano",
+            y_title="Taxa de Cesárea (%)",
+            color="warning",
+            reference_line={"y": 15, "text": "Referência OMS", "color": "danger"},
         )
 
-        fig.update_traces(line=dict(width=3), marker=dict(size=10))
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Taxa de Cesárea (%)",
-            showlegend=False,
-            yaxis=dict(rangemode="tozero"),
-            margin=dict(r=125),  # Right margin for annotation text
-        )
-
-        # Add reference line at 15% (WHO recommendation)
-        fig.add_hline(
-            y=15, line_dash="dash", line_color=COLOR_PALETTE["danger"], annotation_text="Recomendação OMS", annotation_position="right"
-        )
+        # Add right margin for annotation text
+        fig.update_layout(margin=dict(r=125))
 
         return fig
 
@@ -615,100 +595,31 @@ def register_callbacks(app):
         # Calculate non-extreme preterm (preterm but not extreme)
         df["moderate_preterm_count"] = df["preterm_birth_count"] - df["extreme_preterm_birth_count"]
 
-        # Create stacked bar chart
-        import plotly.graph_objects as go
-
-        fig = go.Figure()
-
-        # Add moderate preterm
-        fig.add_trace(
-            go.Bar(
-                x=df["year"],
-                y=df["moderate_preterm_count"],
-                name="Prematuros Moderados (32-36 sem)",
-                marker_color=COLOR_PALETTE["warning"],
-                text=[f"{int(val):_}".replace("_", ".") for val in df["moderate_preterm_count"]],
-                textposition="inside",
-                textfont=dict(size=11, color="white"),
-            )
+        return create_stacked_bar_chart(
+            df=df,
+            x_col="year",
+            y_cols=["moderate_preterm_count", "extreme_preterm_birth_count"],
+            labels=["Prematuros Moderados (32-36 sem)", "Prematuros Extremos (<32 sem)"],
+            colors=["warning", "danger"],
+            x_title="Ano",
+            y_title="Número de Nascimentos Prematuros",
         )
-
-        # Add extreme preterm
-        fig.add_trace(
-            go.Bar(
-                x=df["year"],
-                y=df["extreme_preterm_birth_count"],
-                name="Prematuros Extremos (<32 sem)",
-                marker_color=COLOR_PALETTE["danger"],
-                text=[f"{int(val):_}".replace("_", ".") for val in df["extreme_preterm_birth_count"]],
-                textposition="outside",
-                textfont=dict(size=11),
-            )
-        )
-
-        # Calculate max value for y-axis with padding for outside text
-        max_value = df["preterm_birth_count"].max()
-        y_axis_max = max_value * 1.25  # 25% padding above for outside text
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Número de Nascimentos Prematuros",
-            barmode="stack",
-            yaxis=dict(range=[0, y_axis_max]),
-            legend=LEGEND_CONFIG,
-        )
-
-        return fig
 
     @app.callback(Output("home-relative-preterm-comparison", "figure"), Input("url", "pathname"))
     def update_preterm_rate(_):
         """Update preterm birth rate chart with multiple lines."""
         df = data_loader.load_yearly_aggregates()
 
-        import plotly.graph_objects as go
-
-        fig = go.Figure()
-
-        # Add total preterm line
-        fig.add_trace(
-            go.Scatter(
-                x=df["year"],
-                y=df["preterm_birth_pct"],
-                mode="lines+markers",
-                name="Prematuros Total (<37 sem)",
-                line=dict(color=COLOR_PALETTE["warning"], width=3),
-                marker=dict(size=10),
-            )
+        return create_multi_line_chart(
+            df=df,
+            x_col="year",
+            y_cols=["preterm_birth_pct", "extreme_preterm_birth_pct"],
+            labels=["Prematuros Total (<37 sem)", "Prematuros Extremos (<32 sem)"],
+            colors=["warning", "danger"],
+            x_title="Ano",
+            y_title="Taxa de Prematuridade (%)",
+            reference_line={"y": 10, "text": "Referência OMS", "color": "neutral"},
         )
-
-        # Add extreme preterm line
-        fig.add_trace(
-            go.Scatter(
-                x=df["year"],
-                y=df["extreme_preterm_birth_pct"],
-                mode="lines+markers",
-                name="Prematuros Extremos (<32 sem)",
-                line=dict(color=COLOR_PALETTE["danger"], width=3),
-                marker=dict(size=10),
-            )
-        )
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Taxa de Prematuridade (%)",
-            yaxis=dict(rangemode="tozero"),
-            legend=LEGEND_CONFIG,
-            margin=dict(r=125),  # Right margin for annotation text
-        )
-
-        # Add reference line at 10% (WHO guideline for preterm births)
-        fig.add_hline(
-            y=10, line_dash="dash", line_color=COLOR_PALETTE["neutral"], annotation_text="Referência OMS", annotation_position="right"
-        )
-
-        return fig
 
     @app.callback(Output("home-absolute-adolescent-comparison", "figure"), Input("url", "pathname"))
     def update_adolescent_absolute(_):
@@ -718,207 +629,86 @@ def register_callbacks(app):
         # Calculate adolescents 15-19 years (adolescent but not very young)
         df["older_adolescent_count"] = df["adolescent_pregnancy_count"] - df["very_young_pregnancy_count"]
 
-        # Create stacked bar chart
-        import plotly.graph_objects as go
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=df["year"],
-                y=df["older_adolescent_count"],
-                name="Adolescentes 15-19 anos",
-                marker_color=COLOR_PALETTE["info"],
-                text=[f"{int(val):_}".replace("_", ".") for val in df["older_adolescent_count"]],
-                textposition="inside",
-                textfont=dict(size=11, color="white"),
-            )
+        return create_stacked_bar_chart(
+            df=df,
+            x_col="year",
+            y_cols=["older_adolescent_count", "very_young_pregnancy_count"],
+            labels=["Adolescentes 15-19 anos", "Menores de 15 anos"],
+            colors=["info", "danger"],
+            x_title="Ano",
+            y_title="Número de Gestações em Adolescentes",
         )
-
-        fig.add_trace(
-            go.Bar(
-                x=df["year"],
-                y=df["very_young_pregnancy_count"],
-                name="Menores de 15 anos",
-                marker_color=COLOR_PALETTE["danger"],
-                text=[f"{int(val):_}".replace("_", ".") for val in df["very_young_pregnancy_count"]],
-                textposition="outside",
-                textfont=dict(size=11),
-            )
-        )
-
-        # Calculate max value for y-axis with padding for outside text
-        max_value = df["adolescent_pregnancy_count"].max()
-        y_axis_max = max_value * 1.25  # 25% padding above for outside text
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Número de Gestações em Adolescentes",
-            barmode="stack",
-            yaxis=dict(range=[0, y_axis_max]),
-            legend=LEGEND_CONFIG,
-        )
-
-        return fig
 
     @app.callback(Output("home-relative-adolescent-comparison", "figure"), Input("url", "pathname"))
     def update_adolescent_rate(_):
         """Update adolescent pregnancy rate chart with multiple lines."""
         df = data_loader.load_yearly_aggregates()
 
-        import plotly.graph_objects as go
-
-        fig = go.Figure()
-
-        # Add total adolescent line
-        fig.add_trace(
-            go.Scatter(
-                x=df["year"],
-                y=df["adolescent_pregnancy_pct"],
-                mode="lines+markers",
-                name="Adolescentes Total (<20 anos)",
-                line=dict(color=COLOR_PALETTE["info"], width=3),
-                marker=dict(size=10),
-            )
+        return create_multi_line_chart(
+            df=df,
+            x_col="year",
+            y_cols=["adolescent_pregnancy_pct", "very_young_pregnancy_pct"],
+            labels=["Adolescentes Total (<20 anos)", "Menores de 15 anos"],
+            colors=["info", "danger"],
+            x_title="Ano",
+            y_title="Taxa de Gravidez na Adolescência (%)",
         )
-
-        # Add very young line
-        fig.add_trace(
-            go.Scatter(
-                x=df["year"],
-                y=df["very_young_pregnancy_pct"],
-                mode="lines+markers",
-                name="Menores de 15 anos",
-                line=dict(color=COLOR_PALETTE["danger"], width=3),
-                marker=dict(size=10),
-            )
-        )
-        max_value = df["very_young_pregnancy_pct"].max()
-        y_axis_max = max_value * 1.25
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Taxa de Gravidez na Adolescência (%)",
-            yaxis=dict(range=[0, y_axis_max]),
-            legend=LEGEND_CONFIG,
-        )
-
-        return fig
 
     @app.callback(Output("home-absolute-low-weight-comparison", "figure"), Input("url", "pathname"))
     def update_low_weight_absolute(_):
         """Update low birth weight absolute numbers chart."""
         df = data_loader.load_yearly_aggregates()
 
-        fig = px.bar(
-            df,
-            x="year",
-            y="low_birth_weight_count",
-            text="low_birth_weight_count",
-            template=TEMPLATE,
-            color_discrete_sequence=[COLOR_PALETTE["warning"]],
+        return create_simple_bar_chart(
+            df=df,
+            x_col="year",
+            y_col="low_birth_weight_count",
+            x_title="Ano",
+            y_title="Número de Nascimentos <2.500g",
+            color="warning",
         )
-
-        fig.update_traces(texttemplate="%{text:_}".replace("_", "."), textposition="outside")
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Número de Nascimentos <2.500g",
-            showlegend=False,
-        )
-
-        return fig
 
     @app.callback(Output("home-relative-low-weight-comparison", "figure"), Input("url", "pathname"))
     def update_low_weight_rate(_):
         """Update low birth weight rate chart."""
         df = data_loader.load_yearly_aggregates()
 
-        import plotly.graph_objects as go
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=df["year"],
-                y=df["low_birth_weight_pct"],
-                mode="lines+markers",
-                name="Taxa de Baixo Peso",
-                line=dict(color=COLOR_PALETTE["warning"], width=3),
-                marker=dict(size=10),
-            )
+        return create_line_chart(
+            df=df,
+            x_col="year",
+            y_col="low_birth_weight_pct",
+            x_title="Ano",
+            y_title="Taxa de Baixo Peso ao Nascer (%)",
+            color="warning",
         )
-
-        max_value = df["low_birth_weight_pct"].max()
-        y_axis_max = max_value * 1.25
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Taxa de Baixo Peso ao Nascer (%)",
-            yaxis=dict(range=[0, y_axis_max]),
-            showlegend=False,
-        )
-
-        return fig
 
     @app.callback(Output("home-absolute-low-apgar-comparison", "figure"), Input("url", "pathname"))
     def update_low_apgar_absolute(_):
         """Update low APGAR5 absolute numbers chart."""
         df = data_loader.load_yearly_aggregates()
 
-        fig = px.bar(
-            df,
-            x="year",
-            y="low_apgar5_count",
-            text="low_apgar5_count",
-            template=TEMPLATE,
-            color_discrete_sequence=[COLOR_PALETTE["danger"]],
+        return create_simple_bar_chart(
+            df=df,
+            x_col="year",
+            y_col="low_apgar5_count",
+            x_title="Ano",
+            y_title="Número de APGAR5 <7",
+            color="danger",
         )
-
-        fig.update_traces(texttemplate="%{text:_}".replace("_", "."), textposition="outside")
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Número de APGAR5 <7",
-            showlegend=False,
-        )
-
-        return fig
 
     @app.callback(Output("home-relative-low-apgar-comparison", "figure"), Input("url", "pathname"))
     def update_low_apgar_rate(_):
         """Update low APGAR5 rate chart."""
         df = data_loader.load_yearly_aggregates()
 
-        import plotly.graph_objects as go
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=df["year"],
-                y=df["low_apgar5_pct"],
-                mode="lines+markers",
-                name="Taxa de APGAR5 Baixo",
-                line=dict(color=COLOR_PALETTE["danger"], width=3),
-                marker=dict(size=10),
-            )
+        return create_line_chart(
+            df=df,
+            x_col="year",
+            y_col="low_apgar5_pct",
+            x_title="Ano",
+            y_title="Taxa de APGAR5 Baixo (%)",
+            color="danger",
         )
-
-        fig.update_layout(
-            **COMMON_LAYOUT,
-            xaxis_title="Ano",
-            yaxis_title="Taxa de APGAR5 <7 (%)",
-            yaxis=dict(rangemode="tozero"),
-            showlegend=False,
-        )
-
-        return fig
 
 
 # Layout for routing

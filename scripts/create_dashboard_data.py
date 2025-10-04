@@ -60,6 +60,7 @@ ESSENTIAL_COLUMNS = [
     "IDADEMAEBIN",  #
     "PESOBIN",
     "DESLOCNASCBOOL",
+    "OCUPMAE",
 ]
 
 
@@ -141,7 +142,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             lambda x: (pd.to_numeric(x["PARTO"], errors="coerce") == 2).mean() * 100,  # type: ignore
             include_groups=False,  # type: ignore
         )  # type: ignore
-        monthly["cesarean_rate_pct"] = cesarean_rate
+        monthly["cesarean_pct"] = cesarean_rate
 
     if "GRAVIDEZ" in df.columns:
         # Convert to numeric for comparison
@@ -166,6 +167,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["preterm_birth_pct"] = preterm_rate
+        monthly["preterm_birth_count"] = (monthly["total_births"] * monthly["preterm_birth_pct"] / 100).round().astype(int)
 
         # Add extreme preterm births (GESTACAO < 3 means < 32 weeks)
         extreme_preterm_rate = df.groupby("year_month").apply(
@@ -173,6 +175,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["extreme_preterm_birth_pct"] = extreme_preterm_rate
+        monthly["extreme_preterm_birth_count"] = (monthly["total_births"] * monthly["extreme_preterm_birth_pct"] / 100).round().astype(int)
 
     # Add adolescent pregnancies (IDADEMAE < 20)
     if "IDADEMAE" in df.columns:
@@ -181,6 +184,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["adolescent_pregnancy_pct"] = adolescent_rate
+        monthly["adolescent_pregnancy_count"] = (monthly["total_births"] * monthly["adolescent_pregnancy_pct"] / 100).round().astype(int)
 
         # Add very young pregnancies (IDADEMAE < 15)
         very_young_rate = df.groupby("year_month").apply(
@@ -188,6 +192,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["very_young_pregnancy_pct"] = very_young_rate
+        monthly["very_young_pregnancy_count"] = (monthly["total_births"] * monthly["very_young_pregnancy_pct"] / 100).round().astype(int)
 
     # Add low birth weight (PESO < 2500g)
     if "PESO" in df.columns:
@@ -196,6 +201,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["low_birth_weight_pct"] = low_weight_rate
+        monthly["low_birth_weight_count"] = (monthly["total_births"] * monthly["low_birth_weight_pct"] / 100).round().astype(int)
 
     # Add low APGAR5 (APGAR5 < 7)
     if "APGAR5" in df.columns:
@@ -204,24 +210,6 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["low_apgar5_pct"] = low_apgar_rate
-
-    # Calculate absolute counts if percentages exist
-    if "preterm_birth_pct" in monthly.columns:
-        monthly["preterm_birth_count"] = (monthly["total_births"] * monthly["preterm_birth_pct"] / 100).round().astype(int)
-
-    if "extreme_preterm_birth_pct" in monthly.columns:
-        monthly["extreme_preterm_birth_count"] = (monthly["total_births"] * monthly["extreme_preterm_birth_pct"] / 100).round().astype(int)
-
-    if "adolescent_pregnancy_pct" in monthly.columns:
-        monthly["adolescent_pregnancy_count"] = (monthly["total_births"] * monthly["adolescent_pregnancy_pct"] / 100).round().astype(int)
-
-    if "very_young_pregnancy_pct" in monthly.columns:
-        monthly["very_young_pregnancy_count"] = (monthly["total_births"] * monthly["very_young_pregnancy_pct"] / 100).round().astype(int)
-
-    if "low_birth_weight_pct" in monthly.columns:
-        monthly["low_birth_weight_count"] = (monthly["total_births"] * monthly["low_birth_weight_pct"] / 100).round().astype(int)
-
-    if "low_apgar5_pct" in monthly.columns:
         monthly["low_apgar5_count"] = (monthly["total_births"] * monthly["low_apgar5_pct"] / 100).round().astype(int)
 
     # Reset index
@@ -277,7 +265,7 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
             lambda x: (pd.to_numeric(x["PARTO"], errors="coerce") == 2).mean() * 100,  # type: ignore
             include_groups=False,  # type: ignore
         )  # type: ignore
-        state_agg["cesarean_rate_pct"] = cesarean_rate
+        state_agg["cesarean_pct"] = cesarean_rate
 
     if "GRAVIDEZ" in df.columns:
         multiple_rate = df.groupby("state_code").apply(
@@ -299,6 +287,14 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
             include_groups=False,  # type: ignore
         )  # type: ignore
         state_agg["preterm_rate_pct"] = preterm_rate
+        state_agg["preterm_rate_count"] = (state_agg["total_births"] * state_agg["preterm_rate_pct"] / 100).round().astype(int)
+
+        extreme_preterm_rate = df.groupby("state_code").apply(
+            lambda x: (pd.to_numeric(x["GESTACAO"], errors="coerce") < 3).mean() * 100,  # type: ignore
+            include_groups=False,  # type: ignore
+        )  # type: ignore
+        state_agg["extreme_preterm_rate_pct"] = extreme_preterm_rate
+        state_agg["extreme_preterm_rate_count"] = (state_agg["total_births"] * state_agg["extreme_preterm_rate_pct"] / 100).round().astype(int)
 
     # Add low birth weight (PESO < 2500g)
     if "PESO" in df.columns:
@@ -307,6 +303,7 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
             include_groups=False,  # type: ignore
         )  # type: ignore
         state_agg["low_birth_weight_pct"] = low_weight_rate
+        state_agg["low_birth_weight_count"] = (state_agg["total_births"] * state_agg["low_birth_weight_pct"] / 100).round().astype(int)
 
     # Add low APGAR5 (APGAR5 < 7)
     if "APGAR5" in df.columns:
@@ -315,6 +312,7 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
             include_groups=False,  # type: ignore
         )  # type: ignore
         state_agg["low_apgar5_pct"] = low_apgar_rate
+        state_agg["low_apgar5_count"] = (state_agg["total_births"] * state_agg["low_apgar5_pct"] / 100).round().astype(int)
 
     # Reset index
     state_agg = state_agg.reset_index()
@@ -365,7 +363,7 @@ def create_municipality_aggregates(df: pd.DataFrame, year: int, output_dir: str,
             lambda x: (pd.to_numeric(x["PARTO"], errors="coerce") == 2).mean() * 100,  # type: ignore
             include_groups=False,  # type: ignore
         )
-        mun_agg["cesarean_rate_pct"] = cesarean_rate
+        mun_agg["cesarean_pct"] = cesarean_rate
 
     # Sort by birth count and take top N
     mun_agg = mun_agg.sort_values("total_births", ascending=False).head(top_n)
@@ -424,8 +422,8 @@ def create_yearly_summary(df: pd.DataFrame, year: int, output_dir: str) -> dict:
             "apgar5_mean": float(df["APGAR5"].mean()) if "APGAR5" in df.columns else None,
         },
         "delivery_type": {
-            "cesarean_rate_pct": float((pd.to_numeric(df["PARTO"], errors="coerce") == 2).mean() * 100) if "PARTO" in df.columns else None,
-            "vaginal_rate_pct": float((pd.to_numeric(df["PARTO"], errors="coerce") == 1).mean() * 100) if "PARTO" in df.columns else None,
+            "cesarean_pct": float((pd.to_numeric(df["PARTO"], errors="coerce") == 2).mean() * 100) if "PARTO" in df.columns else None,
+            "vaginal_pct": float((pd.to_numeric(df["PARTO"], errors="coerce") == 1).mean() * 100) if "PARTO" in df.columns else None,
         },
         "location": {
             "hospital_birth_pct": float((pd.to_numeric(df["LOCNASC"], errors="coerce") == 1).mean() * 100) if "LOCNASC" in df.columns else None,
@@ -436,6 +434,15 @@ def create_yearly_summary(df: pd.DataFrame, year: int, output_dir: str) -> dict:
             if "GRAVIDEZ" in df.columns
             else None,
             "preterm_birth_pct": float((pd.to_numeric(df["GESTACAO"], errors="coerce") < 5).mean() * 100) if "GESTACAO" in df.columns else None,
+            "extreme_preterm_birth_pct": float((pd.to_numeric(df["GESTACAO"], errors="coerce") < 3).mean() * 100)
+            if "GESTACAO" in df.columns
+            else None,
+            "adolescent_pregnancy_pct": float((pd.to_numeric(df["IDADEMAE"], errors="coerce") < 20).mean() * 100)
+            if "IDADEMAE" in df.columns
+            else None,
+            "very_young_pregnancy_pct": float((pd.to_numeric(df["IDADEMAE"], errors="coerce") < 15).mean() * 100)
+            if "IDADEMAE" in df.columns
+            else None,
             "gestational_weeks_mean": float(df["SEMAGESTAC"].mean()) if "SEMAGESTAC" in df.columns else None,
             "gestational_weeks_median": float(df["SEMAGESTAC"].median()) if "SEMAGESTAC" in df.columns else None,
         },
@@ -445,11 +452,42 @@ def create_yearly_summary(df: pd.DataFrame, year: int, output_dir: str) -> dict:
         },
     }
 
+    # Maternal occupation counts (OCUPMAE)
+    # Map the known occupation group codes to human labels and count occurrences.
+    # We include codes 1..7 plus 9 (Ignorado) as requested.
+    if "OCUPMAE" in df.columns:
+        summary["maternal_occupation"] = {}
+        ocup_labels = {
+            1: "Trabalhadora do Lar",
+            2: "Estudante",
+            3: "Trabalhadora Rural",
+            4: "Profissionais das Ciências e das Artes",
+            5: "Técnicos e Profissionais de Nível Médio",
+            6: "Trabalhadores de Serviços Administrativos",
+            7: "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados",
+            9: "Ignorado",
+        }
+
+        # Coerce to numeric to allow safe comparison; missing/invalid become NaN
+        df_ocup = pd.to_numeric(df["OCUPMAE"], errors="coerce")
+
+        for code, label in ocup_labels.items():
+            count = int(df_ocup.eq(code).sum())
+            # store both label and raw count for clarity
+            summary["maternal_occupation"][label] = count
+
+    else:
+        summary["maternal_occupation"] = None
+
     print("  ✅ Summary statistics computed")
     print(f"     Total births: {summary['total_births']:,}")
     print(f"     Avg maternal age: {summary['maternal_age']['mean']:.1f} years")
     print(f"     Avg birth weight: {summary['birth_weight']['mean']:.0f} grams")
-    print(f"     Cesarean rate: {summary['delivery_type']['cesarean_rate_pct']:.1f}%")
+    print(f"     Cesarean rate: {summary['delivery_type']['cesarean_pct']:.1f}%")
+    print(f"     Low birth weight rate: {summary['health_indicators']['low_birth_weight_pct']:.1f}%")
+    print(f"     Low APGAR5 rate: {summary['health_indicators']['low_apgar5_pct']:.1f}%")
+    print(f"     Adolescent pregnancy rate: {summary['pregnancy']['adolescent_pregnancy_pct']:.1f}%")
+    print(f"     Preterm birth rate: {summary['pregnancy']['preterm_birth_pct']:.1f}%")
 
     return summary
 
@@ -488,16 +526,16 @@ def create_yearly_aggregates(output_dir: str) -> str:
         yearly_row = {
             "year": year,
             "total_births": df_monthly["total_births"].sum(),
-            "PESO_mean": df_monthly["PESO_mean"].mean(),
-            "PESO_median": df_monthly["PESO_median"].mean(),
-            "PESO_std": df_monthly["PESO_std"].mean(),
-            "IDADEMAE_mean": df_monthly["IDADEMAE_mean"].mean(),
-            "IDADEMAE_median": df_monthly["IDADEMAE_median"].mean(),
-            "SEMAGESTAC_mean": df_monthly["SEMAGESTAC_mean"].mean() if "SEMAGESTAC_mean" in df_monthly.columns else None,
-            "SEMAGESTAC_median": df_monthly["SEMAGESTAC_median"].mean() if "SEMAGESTAC_median" in df_monthly.columns else None,
+            "birth_weight_mean": df_monthly["PESO_mean"].mean(),
+            "birth_weight_median": df_monthly["PESO_median"].mean(),
+            "birth_weight_std": df_monthly["PESO_std"].mean(),
+            "mother_age_mean": df_monthly["IDADEMAE_mean"].mean(),
+            "mother_age_median": df_monthly["IDADEMAE_median"].mean(),
+            "gestational_age_mean": df_monthly["SEMAGESTAC_mean"].mean() if "SEMAGESTAC_mean" in df_monthly.columns else None,
+            "gestational_age_median": df_monthly["SEMAGESTAC_median"].mean() if "SEMAGESTAC_median" in df_monthly.columns else None,
             "APGAR1_mean": df_monthly["APGAR1_mean"].mean(),
             "APGAR5_mean": df_monthly["APGAR5_mean"].mean(),
-            "cesarean_rate_pct": df_monthly["cesarean_rate_pct"].mean(),
+            "cesarean_pct": df_monthly["cesarean_pct"].mean(),
             "multiple_pregnancy_pct": df_monthly["multiple_pregnancy_pct"].mean(),
             "hospital_birth_pct": df_monthly["hospital_birth_pct"].mean(),
         }
@@ -505,26 +543,38 @@ def create_yearly_aggregates(output_dir: str) -> str:
         # Add preterm births if available
         if "preterm_birth_pct" in df_monthly.columns:
             yearly_row["preterm_birth_pct"] = df_monthly["preterm_birth_pct"].mean()
+            yearly_row["preterm_birth_count"] = (yearly_row["total_births"] * yearly_row["preterm_birth_pct"] / 100).round().astype(int)
 
         # Add extreme preterm births if available
         if "extreme_preterm_birth_pct" in df_monthly.columns:
             yearly_row["extreme_preterm_birth_pct"] = df_monthly["extreme_preterm_birth_pct"].mean()
+            yearly_row["extreme_preterm_birth_count"] = (
+                (yearly_row["total_births"] * yearly_row["extreme_preterm_birth_pct"] / 100).round().astype(int)
+            )
 
         # Add adolescent pregnancy if available
         if "adolescent_pregnancy_pct" in df_monthly.columns:
             yearly_row["adolescent_pregnancy_pct"] = df_monthly["adolescent_pregnancy_pct"].mean()
+            yearly_row["adolescent_pregnancy_count"] = (
+                (yearly_row["total_births"] * yearly_row["adolescent_pregnancy_pct"] / 100).round().astype(int)
+            )
 
         # Add very young pregnancy if available
         if "very_young_pregnancy_pct" in df_monthly.columns:
             yearly_row["very_young_pregnancy_pct"] = df_monthly["very_young_pregnancy_pct"].mean()
+            yearly_row["very_young_pregnancy_count"] = (
+                (yearly_row["total_births"] * yearly_row["very_young_pregnancy_pct"] / 100).round().astype(int)
+            )
 
         # Add low birth weight if available
         if "low_birth_weight_pct" in df_monthly.columns:
             yearly_row["low_birth_weight_pct"] = df_monthly["low_birth_weight_pct"].mean()
+            yearly_row["low_birth_weight_count"] = (yearly_row["total_births"] * yearly_row["low_birth_weight_pct"] / 100).round().astype(int)
 
         # Add low APGAR5 if available
         if "low_apgar5_pct" in df_monthly.columns:
             yearly_row["low_apgar5_pct"] = df_monthly["low_apgar5_pct"].mean()
+            yearly_row["low_apgar5_count"] = (yearly_row["total_births"] * yearly_row["low_apgar5_pct"] / 100).round().astype(int)
 
         yearly_data.append(yearly_row)
 
@@ -532,33 +582,12 @@ def create_yearly_aggregates(output_dir: str) -> str:
     df_yearly = pd.DataFrame(yearly_data)
     df_yearly = df_yearly.sort_values("year")
 
-    # Add calculated columns
-    df_yearly["birth_weight_mean"] = df_yearly["PESO_mean"]
-    df_yearly["maternal_age_mean"] = df_yearly["IDADEMAE_mean"]
-    if "SEMAGESTAC_mean" in df_yearly.columns:
-        df_yearly["gestational_weeks_mean"] = df_yearly["SEMAGESTAC_mean"]
-    df_yearly["vaginal_rate_pct"] = 100 - df_yearly["cesarean_rate_pct"]
+    if "gestational_age_mean" in df_yearly.columns:
+        df_yearly["gestational_weeks_mean"] = df_yearly["gestational_age_mean"]
 
-    # Calculate absolute counts if percentages exist
-    if "preterm_birth_pct" in df_yearly.columns:
-        df_yearly["preterm_birth_count"] = (df_yearly["total_births"] * df_yearly["preterm_birth_pct"] / 100).round().astype(int)
-
-    if "extreme_preterm_birth_pct" in df_yearly.columns:
-        df_yearly["extreme_preterm_birth_count"] = (
-            (df_yearly["total_births"] * df_yearly["extreme_preterm_birth_pct"] / 100).round().astype(int)
-        )
-
-    if "adolescent_pregnancy_pct" in df_yearly.columns:
-        df_yearly["adolescent_pregnancy_count"] = (df_yearly["total_births"] * df_yearly["adolescent_pregnancy_pct"] / 100).round().astype(int)
-
-    if "very_young_pregnancy_pct" in df_yearly.columns:
-        df_yearly["very_young_pregnancy_count"] = (df_yearly["total_births"] * df_yearly["very_young_pregnancy_pct"] / 100).round().astype(int)
-
-    if "low_birth_weight_pct" in df_yearly.columns:
-        df_yearly["low_birth_weight_count"] = (df_yearly["total_births"] * df_yearly["low_birth_weight_pct"] / 100).round().astype(int)
-
-    if "low_apgar5_pct" in df_yearly.columns:
-        df_yearly["low_apgar5_count"] = (df_yearly["total_births"] * df_yearly["low_apgar5_pct"] / 100).round().astype(int)
+    df_yearly["cesarean_count"] = (df_yearly["total_births"] * df_yearly["cesarean_pct"] / 100).round().astype(int)
+    df_yearly["vaginal_pct"] = 100 - df_yearly["cesarean_pct"]
+    df_yearly["vaginal_count"] = (df_yearly["total_births"] * df_yearly["vaginal_pct"] / 100).round().astype(int)
 
     # Save
     output_path = os.path.join(aggregates_dir, "yearly.parquet")
@@ -643,7 +672,7 @@ def create_metadata(summaries: list[dict], output_dir: str) -> str:
                 "PESO_mean",
                 "PESO_median",
                 "IDADEMAE_mean",
-                "cesarean_rate_pct",
+                "cesarean_pct",
                 "hospital_birth_pct",
             ],
         },
@@ -691,7 +720,7 @@ def process_year(year: int, data_dir: str, output_dir: str, dataset: str = "comp
     print(f"  ✅ Loaded {len(df):,} records with {len(df.columns)} columns\n")
 
     # Create all optimized files
-    create_essential_subset(df, year, output_dir)
+    # create_essential_subset(df, year, output_dir)
     create_monthly_aggregates(df, year, output_dir)
     create_state_aggregates(df, year, output_dir)
     create_municipality_aggregates(df, year, output_dir, top_n=500)
@@ -757,7 +786,7 @@ def main():
 
     # Calculate total size
     total_size = 0
-    for root, dirs, files in os.walk(args.output_dir):
+    for root, _dirs, files in os.walk(args.output_dir):
         for file in files:
             total_size += os.path.getsize(os.path.join(root, file))
 

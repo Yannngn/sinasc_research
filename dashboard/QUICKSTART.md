@@ -81,7 +81,7 @@ The dashboard uses pre-optimized data files located in `sinasc_research/dashboar
 
 ### Aggregated Data (5 Years: 2019-2024)
 - **yearly.parquet**: 12.5KB, 5 rows, 23 columns
-  - Includes: total_births, preterm_birth_pct, extreme_preterm_birth_pct, adolescent_pregnancy_pct, very_young_pregnancy_pct, cesarean_rate_pct, PESO_mean, IDADEMAE_mean, APGAR5_mean, hospital_birth_pct, etc.
+  - Includes: total_births, preterm_birth_pct, extreme_preterm_birth_pct, adolescent_pregnancy_pct, very_young_pregnancy_pct, cesarean_pct, PESO_mean, IDADEMAE_mean, APGAR5_mean, hospital_birth_pct, etc.
 - **Monthly aggregates**: monthly_{year}.parquet (10KB each, 12 months per year)
 - **State aggregates**: state_{year}.parquet (11KB each, 27 states)
 - **Municipality aggregates**: municipality_{year}.parquet (30KB each, top 500)

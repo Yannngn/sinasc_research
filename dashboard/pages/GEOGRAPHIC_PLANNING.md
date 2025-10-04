@@ -39,7 +39,7 @@ Os indicadores mais relevantes para análise de saúde pública são as **taxas*
 2. **Taxa de Prematuridade** (`preterm_birth_pct`) - <37 semanas
 3. **Taxa de APGAR5 Baixo** (`low_apgar5_pct`) - <7 no 5º minuto
 4. **Taxa de Gravidez na Adolescência** (`adolescent_pregnancy_pct`) - <20 anos
-5. **Taxa de Cesárea** (`cesarean_rate_pct`) - Comparar com OMS (15%)
+5. **Taxa de Cesárea** (`cesarean_pct`) - Comparar com OMS (15%)
 6. **Taxa de Nascimento Hospitalar** (`hospital_birth_pct`) - Cobertura
 
 **📊 Indicadores Secundários (Médias - menor prioridade):**
@@ -61,7 +61,7 @@ Colunas disponíveis:
 - IDADEMAE_mean, IDADEMAE_median: Idade materna
 - SEMAGESTAC_mean, SEMAGESTAC_median: Idade gestacional
 - APGAR1_mean, APGAR5_mean: Scores APGAR
-- cesarean_rate_pct: Taxa de cesárea
+- cesarean_pct: Taxa de cesárea
 - multiple_pregnancy_pct: Taxa de gestação múltipla
 - hospital_birth_pct: Taxa de nascimento hospitalar
 - preterm_birth_pct: Taxa de prematuridade
@@ -75,7 +75,7 @@ Top 500 municípios por volume de nascimentos:
 - PESO_mean, PESO_median: Peso ao nascer
 - IDADEMAE_mean: Idade materna média
 - APGAR5_mean: Score APGAR 5min
-- cesarean_rate_pct: Taxa de cesárea
+- cesarean_pct: Taxa de cesárea
 ```
 
 ### Dados Complementares
@@ -148,7 +148,7 @@ indicator_dropdown = dcc.Dropdown(
     id="geo-indicator-dropdown",
     options=[
         {"label": "Total de Nascimentos", "value": "total_births"},
-        {"label": "Taxa de Cesárea (%)", "value": "cesarean_rate_pct"},
+        {"label": "Taxa de Cesárea (%)", "value": ""},
         {"label": "Taxa de Prematuridade (%)", "value": "preterm_birth_pct"},
         {"label": "Taxa de Baixo Peso ao Nascer (%)", "value": "low_birth_weight_pct"},
         {"label": "Taxa de APGAR5 Baixo (%)", "value": "low_apgar5_pct"},
@@ -301,7 +301,7 @@ def format_indicator_value(value: float, indicator: str) -> str:
 
 def get_color_scale(indicator: str) -> list:
     """Retorna escala de cores apropriada para o indicador."""
-    if indicator in ['cesarean_rate_pct', 'preterm_birth_pct', 'low_birth_weight_pct', 'low_apgar5_pct', 'adolescent_pregnancy_pct']:
+    if indicator in ['', 'preterm_birth_pct', 'low_birth_weight_pct', 'low_apgar5_pct', 'adolescent_pregnancy_pct']:
         return 'Reds'  # Valores altos = ruim (indicadores negativos)
     elif indicator in ['hospital_birth_pct']:
         return 'Blues'  # Valores altos = bom
@@ -476,7 +476,7 @@ COLOR_SCALES = {
     },
     
     # Indicadores negativos (mais = pior)
-    "cesarean_rate_pct": {
+    "": {
         "scale": "YlOrRd",
         "reversescale": False,
         "description": "Amarelo (baixo) → Laranja → Vermelho (alto)"

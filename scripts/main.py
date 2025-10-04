@@ -37,7 +37,7 @@ def main():
     print(f"{'=' * 60}\n")
 
     if args.all:
-        years = [2019, 2020, 2021, 2022, 2023, 2024]
+        years = [2018, 2019, 2020, 2021, 2022, 2023, 2024]
         for year in years:
             run_one_year(year, args.data_dir, overwrite=args.overwrite)
     else:
@@ -48,7 +48,7 @@ def main():
     print("Creating Dashboard Data Files")
     print(f"{'=' * 60}\n")
     subprocess.run(["python", "-m", "scripts.create_dashboard_data", "--all"])
-    
+
     print(f"\n{'=' * 60}")
     print("✨ Complete Pipeline Finished!")
     print(f"{'=' * 60}\n")
