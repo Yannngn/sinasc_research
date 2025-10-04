@@ -18,7 +18,7 @@ Interactive web dashboard for analyzing Brazilian perinatal health data (SINASC 
 ### Using UV (Recommended)
 ```bash
 # From project root
-cd /home/yannn/projects/Yannngn/sinasc-dashboard/sinasc_research
+cd sinasc_research
 uv sync
 ```
 
@@ -33,14 +33,12 @@ pip install -r requirements.txt
 
 ### Development Mode
 ```bash
-# From dashboard directory
-cd /home/yannn/projects/Yannngn/sinasc-dashboard/sinasc_research/dashboard
-uv run python app.py
-```
-
-Or:
-```bash
+# From project root
+cd dashboard
 python app.py
+
+# Or with UV
+uv run python app.py
 ```
 
 The dashboard will be available at: **http://localhost:8050**
@@ -101,7 +99,7 @@ The dashboard uses pre-optimized data files located in `sinasc_research/dashboar
 To regenerate these files:
 ```bash
 # From project root
-cd /home/yannn/projects/Yannngn/sinasc-dashboard/sinasc_research
+cd sinasc_research
 
 # Generate for all years
 python scripts/create_dashboard_data.py --year 2019
@@ -142,11 +140,11 @@ PORT=8050
   - All charts with optimized layouts (no redundant titles)
 - Annual analysis page with monthly details
 
-🔄 **In Development**:
-- Temporal analysis page with date range filters
-- Geographic analysis page (choropleth maps by state)
-- Insights page with correlations and predictions
-- Additional interactivity and cross-filtering
+🔄 **Planned**:
+- Temporal analysis page with date range filters and time-series trends
+- Geographic analysis page with choropleth maps by state/municipality
+- Insights page with correlations and statistical analysis
+- Enhanced cross-page filtering and state management
 
 ## Performance
 - **Memory usage**: <200MB (target: <512MB for free hosting)
