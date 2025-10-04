@@ -1,7 +1,8 @@
 {
-  "generated_at": "2025-10-04T01:06:32.489908",
-  "total_years": 6,
+  "generated_at": "2025-10-04T01:53:08.978479",
+  "total_years": 7,
   "years": [
+    2018,
     2019,
     2020,
     2021,
@@ -9,12 +10,65 @@
     2023,
     2024
   ],
-  "total_records": 15615924,
+  "total_records": 18560856,
   "date_range": {
-    "min": "2019-01-01T00:00:00",
+    "min": "2018-01-01T00:00:00",
     "max": "2024-12-31T00:00:00"
   },
   "yearly_summaries": [
+    {
+      "year": 2018,
+      "total_births": 2944932,
+      "date_range": {
+        "min": "2018-01-01T00:00:00",
+        "max": "2018-12-31T00:00:00"
+      },
+      "maternal_age": {
+        "mean": 26.930418155275813,
+        "median": 27.0,
+        "std": 6.743644554871438
+      },
+      "birth_weight": {
+        "mean": 3190.5059247883905,
+        "median": 3225.0,
+        "std": 560.9364158366257
+      },
+      "apgar_scores": {
+        "apgar1_mean": 8.366850627103227,
+        "apgar5_mean": 9.347027736281161
+      },
+      "delivery_type": {
+        "cesarean_pct": 55.94373656165915,
+        "vaginal_pct": 43.99222121257808
+      },
+      "location": {
+        "hospital_birth_pct": 98.48339452320121,
+        "unique_municipalities": 3825
+      },
+      "pregnancy": {
+        "multiple_pregnancy_pct": 2.336963977436491,
+        "preterm_birth_pct": 10.990949875922432,
+        "extreme_preterm_birth_pct": 0.544494745549303,
+        "adolescent_pregnancy_pct": 15.488574948419862,
+        "very_young_pregnancy_pct": 0.7189300126454533,
+        "gestational_weeks_mean": 38.48780783724527,
+        "gestational_weeks_median": 39.0
+      },
+      "health_indicators": {
+        "low_birth_weight_pct": 8.503354237041806,
+        "low_apgar5_pct": 1.0074935516337897
+      },
+      "maternal_occupation": {
+        "Trabalhadora do Lar": 150616,
+        "Estudante": 1187402,
+        "Trabalhadora Rural": 303913,
+        "Profissionais das Ciências e das Artes": 263266,
+        "Técnicos e Profissionais de Nível Médio": 138479,
+        "Trabalhadores de Serviços Administrativos": 202209,
+        "Trabalhadores dos Serviços, Vendedores do Comércio em Lojas e Mercados": 291201,
+        "Ignorado": 260377
+      }
+    },
     {
       "year": 2019,
       "total_births": 2849146,

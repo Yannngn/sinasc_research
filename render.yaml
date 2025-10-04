@@ -1,0 +1,17 @@
+# Render.com Deployment Configuration
+# Deploy at: https://render.com
+
+services:
+  - type: web
+    name: sinasc-dashboard
+    env: python
+    region: oregon  # or: frankfurt, singapore
+    plan: free
+    buildCommand: pip install -r dashboard/requirements.txt
+    startCommand: cd dashboard && gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DASH_DEBUG
+        value: false
