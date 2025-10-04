@@ -11,8 +11,6 @@ This script prepares your dashboard for production deployment by:
 """
 
 import json
-import subprocess
-import sys
 from pathlib import Path
 
 

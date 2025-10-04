@@ -30,50 +30,49 @@ def print_step(step: int, total: int, text: str):
 def export_uv_requirements():
     """Export requirements from UV environment."""
     print_step(1, 8, "Exporting requirements from UV environment")
-    
+
     try:
         # Get current Python version
-        result = subprocess.run(
-            ["python", "--version"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
+        result = subprocess.run(["python", "--version"], capture_output=True, text=True, check=True)
         python_version = result.stdout.strip()
         print(f"  📍 Current environment: {python_version}")
-        
+
         # Export from uv
-        result = subprocess.run(
-            ["uv", "pip", "freeze"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        
-        all_deps = result.stdout.strip().split('\n')
-        
+        result = subprocess.run(["uv", "pip", "freeze"], capture_output=True, text=True, check=True)
+
+        all_deps = result.stdout.strip().split("\n")
+
         # Filter for dashboard-specific dependencies
         dashboard_deps = [
-            'dash', 'dash-bootstrap', 'flask', 'werkzeug',
-            'pandas', 'pyarrow', 'numpy',
-            'plotly', 'retrying', 'tenacity',
-            'gunicorn', 'python-dotenv',
-            'typing-extensions', 'importlib-metadata'
+            "dash",
+            "dash-bootstrap",
+            "flask",
+            "werkzeug",
+            "pandas",
+            "pyarrow",
+            "numpy",
+            "plotly",
+            "retrying",
+            "tenacity",
+            "gunicorn",
+            "python-dotenv",
+            "typing-extensions",
+            "importlib-metadata",
         ]
-        
+
         filtered = []
         for line in all_deps:
             line_lower = line.lower()
             if any(dep in line_lower for dep in dashboard_deps):
                 filtered.append(line)
-        
+
         # Ensure gunicorn is included
-        if not any('gunicorn' in line.lower() for line in filtered):
-            filtered.append('gunicorn==21.2.0')
-        
-        if not any('python-dotenv' in line.lower() for line in filtered):
-            filtered.append('python-dotenv==1.0.0')
-        
+        if not any("gunicorn" in line.lower() for line in filtered):
+            filtered.append("gunicorn==21.2.0")
+
+        if not any("python-dotenv" in line.lower() for line in filtered):
+            filtered.append("python-dotenv==1.0.0")
+
         # Create requirements.txt
         header = f"""# SINASC Dashboard - Production Dependencies
 # Exported from UV environment on {python_version}
@@ -83,21 +82,21 @@ def export_uv_requirements():
 # typically support 3.12. All these packages work on both versions.
 
 """
-        
-        content = header + '\n'.join(sorted(filtered)) + '\n'
-        
+
+        content = header + "\n".join(sorted(filtered)) + "\n"
+
         with open("dashboard/requirements.txt", "w") as f:
             f.write(content)
-        
+
         print(f"  ✅ Exported {len(filtered)} packages to dashboard/requirements.txt")
-        print(f"  📦 Key packages:")
+        print("  📦 Key packages:")
         for line in filtered[:8]:
             print(f"     - {line}")
         if len(filtered) > 8:
             print(f"     ... and {len(filtered) - 8} more")
-        
+
         return True
-        
+
     except FileNotFoundError:
         print("  ❌ UV not found! Please install uv or run in uv environment")
         return False
@@ -109,7 +108,7 @@ def export_uv_requirements():
 def create_render_config():
     """Create render.yaml for Render.com deployment."""
     print_step(2, 8, "Creating Render.com config")
-    
+
     render_yaml = """# Render.com Deployment Configuration
 # Deploy at: https://render.com
 
@@ -128,53 +127,50 @@ services:
       - key: DASH_DEBUG
         value: false
 """
-    
+
     with open("render.yaml", "w") as f:
         f.write(render_yaml)
-    
+
     print("  ✅ Created render.yaml")
 
 
 def create_procfile():
     """Create Procfile for Heroku-style platforms."""
     print_step(3, 8, "Creating Procfile")
-    
+
     procfile = """web: cd dashboard && gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
 """
-    
+
     with open("Procfile", "w") as f:
         f.write(procfile)
-    
+
     print("  ✅ Created Procfile")
 
 
 def create_railway_config():
     """Create railway.json for Railway.app."""
     print_step(4, 8, "Creating Railway.app config")
-    
+
     railway_config = {
         "$schema": "https://railway.app/railway.schema.json",
-        "build": {
-            "builder": "NIXPACKS",
-            "buildCommand": "pip install -r dashboard/requirements.txt"
-        },
+        "build": {"builder": "NIXPACKS", "buildCommand": "pip install -r dashboard/requirements.txt"},
         "deploy": {
             "startCommand": "cd dashboard && gunicorn app:server --bind 0.0.0.0:$PORT --workers 2",
             "healthcheckPath": "/",
-            "healthcheckTimeout": 100
-        }
+            "healthcheckTimeout": 100,
+        },
     }
-    
+
     with open("railway.json", "w") as f:
         json.dump(railway_config, f, indent=2)
-    
+
     print("  ✅ Created railway.json")
 
 
 def create_dockerfile():
     """Create Dockerfile for containerized deployment."""
     print_step(5, 8, "Creating Dockerfile")
-    
+
     # Offer both 3.12 and 3.13 versions
     dockerfile_312 = """# SINASC Dashboard - Production Docker Image
 # Python 3.12 (maximum compatibility)
@@ -206,7 +202,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \\
 
 CMD ["gunicorn", "--chdir", "dashboard", "app:server", "--bind", "0.0.0.0:8050", "--workers", "2", "--timeout", "120"]
 """
-    
+
     dockerfile_313 = """# SINASC Dashboard - Production Docker Image
 # Python 3.13 (latest, for Docker deployment)
 FROM python:3.13-slim
@@ -237,15 +233,15 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \\
 
 CMD ["gunicorn", "--chdir", "dashboard", "app:server", "--bind", "0.0.0.0:8050", "--workers", "2", "--timeout", "120"]
 """
-    
+
     # Write Python 3.12 version (default)
     with open("Dockerfile", "w") as f:
         f.write(dockerfile_312)
-    
+
     # Write Python 3.13 version (alternative)
     with open("Dockerfile.python313", "w") as f:
         f.write(dockerfile_313)
-    
+
     # .dockerignore
     dockerignore = """__pycache__/
 *.pyc
@@ -272,10 +268,10 @@ notebooks/
 *.ipynb
 uv.lock
 """
-    
+
     with open(".dockerignore", "w") as f:
         f.write(dockerignore)
-    
+
     print("  ✅ Created Dockerfile (Python 3.12)")
     print("  ✅ Created Dockerfile.python313 (Python 3.13 alternative)")
     print("  ✅ Created .dockerignore")
@@ -284,13 +280,13 @@ uv.lock
 def create_runtime_txt():
     """Create runtime.txt for Python version specification."""
     print_step(6, 8, "Creating runtime.txt")
-    
+
     # Detect current version
     version_info = sys.version_info
     current_version = f"{version_info.major}.{version_info.minor}.{version_info.micro}"
-    
+
     print(f"  📍 Your Python version: {current_version}")
-    
+
     if version_info.major == 3 and version_info.minor >= 13:
         print("  ⚠️  Python 3.13 detected")
         print("     For deployment: Using Python 3.12.7 (maximum platform support)")
@@ -299,44 +295,44 @@ def create_runtime_txt():
     else:
         runtime_version = f"python-{version_info.major}.{version_info.minor}.7"
         note = ""
-    
+
     with open("runtime.txt", "w") as f:
         f.write(f"{runtime_version}\n")
-    
+
     print(f"  ✅ Created runtime.txt: {runtime_version}{note}")
 
 
 def validate_deployment():
     """Validate deployment requirements."""
     print_step(7, 8, "Validating deployment setup")
-    
+
     checks = []
-    
+
     # Check data directory
     data_path = Path("dashboard_data")
     if data_path.exists():
-        size_mb = sum(f.stat().st_size for f in data_path.rglob('*') if f.is_file()) / (1024 * 1024)
+        size_mb = sum(f.stat().st_size for f in data_path.rglob("*") if f.is_file()) / (1024 * 1024)
         checks.append(f"  ✅ Data directory: {size_mb:.2f} MB")
         if size_mb > 100:
             checks.append("  ⚠️  Warning: Data size is large. Consider optimization.")
     else:
         checks.append("  ❌ Data directory not found!")
-    
+
     # Check dashboard directory
     if Path("dashboard/app.py").exists():
         checks.append("  ✅ Dashboard app.py exists")
     else:
         checks.append("  ❌ Dashboard app.py not found!")
-    
+
     # Check requirements
     if Path("dashboard/requirements.txt").exists():
         with open("dashboard/requirements.txt") as f:
-            lines = [l.strip() for l in f if l.strip() and not l.startswith('#')]
+            lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
         checks.append(f"  ✅ Requirements.txt exists ({len(lines)} packages)")
-        
+
         # Check for key packages
-        req_text = ' '.join(lines).lower()
-        key_pkgs = ['dash', 'pandas', 'plotly', 'gunicorn']
+        req_text = " ".join(lines).lower()
+        key_pkgs = ["dash", "pandas", "plotly", "gunicorn"]
         for pkg in key_pkgs:
             if pkg in req_text:
                 checks.append(f"  ✅ {pkg} found in requirements")
@@ -344,21 +340,21 @@ def validate_deployment():
                 checks.append(f"  ❌ {pkg} missing from requirements!")
     else:
         checks.append("  ❌ Requirements.txt not found!")
-    
+
     # Check Python version compatibility
     py_ver = sys.version_info
     if py_ver.major == 3 and py_ver.minor >= 13:
         checks.append(f"  📍 Python {py_ver.major}.{py_ver.minor} (local)")
         checks.append("  📍 Python 3.12.7 will be used for deployment")
         checks.append("  ✅ All packages compatible with both versions")
-    
-    print('\n'.join(checks))
+
+    print("\n".join(checks))
 
 
 def create_deployment_readme():
     """Create deployment-specific README."""
     print_step(8, 8, "Creating deployment documentation")
-    
+
     readme = """# SINASC Dashboard - Deployment Guide
 
 ## 🎯 Quick Deploy (Recommended: Render.com)
@@ -507,17 +503,17 @@ Before going live:
 
 **Questions?** Check DEPLOYMENT_GUIDE.md for detailed information!
 """
-    
+
     with open("DEPLOY_README.md", "w") as f:
         f.write(readme)
-    
+
     print("  ✅ Created DEPLOY_README.md")
 
 
 def print_summary():
     """Print deployment summary."""
     print_header("🎉 Deployment Preparation Complete!")
-    
+
     summary = """
 Generated Files:
   ✅ dashboard/requirements.txt      - From UV environment (Python 3.13)
@@ -584,7 +580,7 @@ Why Python 3.12 for deployment?
   • Python versions: Read PYTHON_313_COMPATIBILITY.md
 
 """
-    
+
     print(summary)
     print("=" * 60)
     print("🚀 Ready to deploy! Follow the steps above.")
@@ -594,22 +590,22 @@ Why Python 3.12 for deployment?
 def main():
     """Main deployment preparation workflow."""
     print_header("🚀 SINASC Dashboard - UV-Aware Deployment Preparation")
-    
+
     print("This script will prepare your dashboard for production deployment.")
     print(f"Your environment: Python {sys.version.split()[0]}")
     print(f"Working directory: {Path('.').absolute()}\n")
-    
+
     # Check if we're in the right directory
     if not Path("dashboard").exists():
         print("❌ Error: dashboard/ directory not found!")
         print("   Please run this script from the project root directory.")
         return 1
-    
+
     if not Path("dashboard_data").exists():
         print("❌ Error: dashboard_data/ directory not found!")
         print("   Please run create_dashboard_data.py first.")
         return 1
-    
+
     try:
         # Run all preparation steps
         if not export_uv_requirements():
@@ -617,7 +613,7 @@ def main():
             print("   Make sure you're in the UV environment:")
             print("   $ source .venv/bin/activate")
             return 1
-        
+
         create_render_config()
         create_procfile()
         create_railway_config()
@@ -625,15 +621,16 @@ def main():
         create_runtime_txt()
         validate_deployment()
         create_deployment_readme()
-        
+
         # Print summary
         print_summary()
-        
+
         return 0
-        
+
     except Exception as e:
         print(f"\n❌ Error during preparation: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
