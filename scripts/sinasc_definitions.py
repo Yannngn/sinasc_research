@@ -227,11 +227,17 @@ COLUMN_RENAME_MAPPING = {
     "OPORT_DN": "birth_opportunity_date_difference_days",  # int unknown but appears in data
 }
 
-with open(Path(PATH, "dtypes.json"), "w") as f:
-    json.dump(SINASC_COLUMNS, f, indent=4, ensure_ascii=False)
 
-with open(Path(PATH, "categorical.json"), "w") as f:
-    json.dump(VALUE_MAPPINGS, f, indent=4, ensure_ascii=False)
+def main():
+    with open(Path(PATH, "dtypes.json"), "w") as f:
+        json.dump(SINASC_COLUMNS, f, indent=4, ensure_ascii=False)
 
-with open(Path(PATH, "rename_mapping.json"), "w") as f:
-    json.dump(COLUMN_RENAME_MAPPING, f, indent=4, ensure_ascii=False)
+    with open(Path(PATH, "categorical.json"), "w") as f:
+        json.dump(VALUE_MAPPINGS, f, indent=4, ensure_ascii=False)
+
+    with open(Path(PATH, "rename_mapping.json"), "w") as f:
+        json.dump(COLUMN_RENAME_MAPPING, f, indent=4, ensure_ascii=False)
+
+
+if __name__ == "__main__":
+    main()

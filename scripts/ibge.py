@@ -6,69 +6,23 @@ from tqdm import tqdm
 
 IBGE_API = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 
-"""
-  {
-    "id": 1100015,
-    "nome": "Alta Floresta D'Oeste",
-    "microrregiao": {
-      "id": 11006,
-      "nome": "Cacoal",
-      "mesorregiao": {
-        "id": 1102,
-        "nome": "Leste Rondoniense",
-        "UF": {
-          "id": 11,
-          "sigla": "RO",
-          "nome": "Rondônia",
-          "regiao": {
-            "id": 1,
-            "sigla": "N",
-            "nome": "Norte"
-          }
-        }
-      }
-    },
-    "regiao-imediata": {
-      "id": 110005,
-      "nome": "Cacoal",
-      "regiao-intermediaria": {
-        "id": 1102,
-        "nome": "Ji-Paraná",
-        "UF": {
-          "id": 11,
-          "sigla": "RO",
-          "nome": "Rondônia",
-          "regiao": {
-            "id": 1,
-            "sigla": "N",
-            "nome": "Norte"
-          }
-        }
-      }
-    }
-  },
-"""
 
-
-def request_ibge(outpath: str = "data/ibge/municipalities.json"):
+def _request(outpath: str = "data/ibge/municipalities.json"):
     response = requests.get(IBGE_API, timeout=30)
+    response.raise_for_status()
 
-    if response.status_code == 200:
-        municipalities = response.json()
+    municipalities = response.json()
 
-        with open(outpath, "w", encoding="utf-8") as f:
-            json.dump(municipalities, f, ensure_ascii=False, indent=2)
+    with open(outpath, "w", encoding="utf-8") as f:
+        json.dump(municipalities, f, ensure_ascii=False, indent=2)
 
-        print(f"✅ Saved raw API response to {outpath}")
-
-    else:
-        print(f"⚠️ Failed to fetch data from IBGE API. Status code: {response.status_code}")
+    print(f"✅ Saved raw API response to {outpath}")
 
 
-def transform_to_flat_csv(json_path: str = "data/ibge/municipalities.json", csv_path: str = "data/ibge/municipalities_flat.csv"):
+def main(json_path: str = "data/ibge/municipalities.json", csv_path: str = "data/ibge/municipalities_flat.csv"):
     print("🌐 Fetching municipality data from IBGE API...")
     if not os.path.exists(json_path):
-        request_ibge(outpath=json_path)
+        _request(outpath=json_path)
 
     with open(json_path, "r", encoding="utf-8") as f:
         municipalities: list[dict] = json.load(f)
@@ -117,4 +71,4 @@ def transform_to_flat_csv(json_path: str = "data/ibge/municipalities.json", csv_
 
 
 if __name__ == "__main__":
-    transform_to_flat_csv()
+    main()

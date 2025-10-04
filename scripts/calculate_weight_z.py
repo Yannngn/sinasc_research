@@ -1,4 +1,17 @@
-import argparse
+"""
+Calculate weight percentiles for SINASC data.
+
+This script calculates birth weight percentiles using WHO growth standards    # Save results
+    print(f"\n💾 Saving data to {output_path}...")
+    df.to_parquet(output_path)
+    print("  ✅ Saved successfully\n")ed on gestational age and sex. Uses parallel processing for efficiency.
+
+Usage:
+    python calculate_weight_z.py 2024
+    python calculate_weight_z.py 2024 --data_dir data/SINASC
+    python calculate_weight_z.py 2024 --dataset selected_features
+"""
+
 import os
 import warnings
 from functools import lru_cache
@@ -8,21 +21,32 @@ import pandas as pd
 from pandarallel import pandarallel
 from pandas.io.common import file_exists
 from pygrowthstandards import functional as F
-from read_file import read_parquet
 
 pandarallel.initialize(progress_bar=True, verbose=0)
 warnings.filterwarnings("ignore")
 
 
 def calculate_weight_percentile(df: pd.DataFrame, z_score_path: str, overwrite: bool = False) -> pd.DataFrame:
+    """
+    Calculate birth weight percentiles using WHO growth standards.
+
+    Args:
+        df: Input DataFrame with PESO, SEXO, and SEMAGESTAC columns
+        z_score_path: Path to save/load cached percentiles
+        overwrite: Whether to recalculate even if cache exists
+
+    Returns:
+        DataFrame with added PESOPERC column
+    """
     print("🚀 Starting weight percentile calculation...")
 
     if file_exists(z_score_path) and not overwrite:
         df["PESOPERC"] = pd.read_parquet(z_score_path)["PESOPERC"]
-        print("✅ Loaded existing birth weight percentiles.")
+        print("  ✅ Loaded existing birth weight percentiles.")
         return df
     else:
-        # Note: pygrowthstandards expects sex as 'M'/'F' and gestational_age in days.
+        # Calculate percentiles using pygrowthstandards
+        # Note: Library expects sex as 'M'/'F' and gestational_age in days
 
         sex_map: dict[int, Literal["M", "F", "U"]] = {1: "M", 2: "F", 9: "U"}  # SINASC: 1 for Male, 2 for Female
 
@@ -63,30 +87,49 @@ def calculate_weight_percentile(df: pd.DataFrame, z_score_path: str, overwrite: 
         df.loc[valid_rows_mask, "PESOPERC"] = percentiles
         df.loc[:, "PESOPERC"].to_frame().to_parquet(z_score_path, index=False)
 
-        print("✅ Calculated and Saved birth weight percentiles.")
+        print("  ✅ Calculated and saved birth weight percentiles.")
 
         return df
 
 
+# Default configuration
 DIR = "data/SINASC"
 YEAR = 2024
 DATASET = "selected_features"
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Feature engineering for SINASC data")
+def main():
+    """Main execution function."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Calculate weight percentiles for SINASC data")
+    parser.add_argument("year", type=int, default=YEAR, help="Year to process")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")
-    parser.add_argument("--year", type=int, default=YEAR, help="Year")
     parser.add_argument("--dataset", default=DATASET, help="Dataset name (without extension)")
     args = parser.parse_args()
 
+    # Define paths
     input_path = os.path.join(args.data_dir, str(args.year), f"{args.dataset}.parquet")
     output_path = os.path.join(args.data_dir, str(args.year), "weight_percentiles.parquet")
+    z_score_path = os.path.join(args.data_dir, str(args.year), "calculated_weight_percentiles.parquet")
 
-    print(f"Loading data from {input_path}...")
-    df = read_parquet(input_path)
+    print(f"\n{'=' * 60}")
+    print(f"Calculating Weight Percentiles: {args.year}")
+    print(f"{'=' * 60}\n")
 
-    df = calculate_weight_percentile(df, z_score_path=os.path.join(args.data_dir, str(args.year), "calculated_weight_percentiles.parquet"))
+    # Load data
+    print(f"📥 Loading data from {input_path}...")
+    df = pd.read_parquet(input_path)
+    print(f"  ✅ Loaded {len(df):,} records\n")
 
-    print(f"Saving engineered data to {output_path}...")
+    # Calculate percentiles
+    df = calculate_weight_percentile(df, z_score_path=z_score_path)
+
+    # Save results
+    print(f"\n💾 Saving data to {output_path}...")
     df.to_parquet(output_path)
+    print("  ✅ Saved successfully\n")
+
+
+if __name__ == "__main__":
+    main()

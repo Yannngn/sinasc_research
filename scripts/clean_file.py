@@ -1,8 +1,24 @@
+"""
+Clean and optimize SINASC data files.
+
+This script performs data cleaning based on SINASC specifications:
+1. Validates schema compliance
+2. Replaces unknown flags with NaN
+3. Optimizes data types for memory efficiency
+4. Converts date/time columns to proper formats
+
+Usage:
+    python clean_file.py 2024
+    python clean_file.py 2024 --data_dir data/SINASC
+"""
+
 import json
+import os
 from collections import defaultdict
 
 import pandas as pd
 
+# Load SINASC schema definitions
 SINASC_COLUMNS = json.load(open("data/SINASC/dtypes.json", "r"))
 
 
@@ -23,6 +39,12 @@ NUMERICAL_WITH_UNKNOWN_FLAGS = {
 
 
 def check_data(df: pd.DataFrame) -> None:
+    """
+    Validate DataFrame schema against official SINASC specification.
+    
+    Args:
+        df: Input DataFrame to validate
+    """
     found_columns = []
     missing_from_dataset = []
     unexpected_columns = []
@@ -57,10 +79,49 @@ def check_data(df: pd.DataFrame) -> None:
             print(f"\t\t... and {len(unexpected_columns) - 5} more")
 
 
+def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replace unknown value flags with NaN based on SINASC specifications.
+    
+    Args:
+        df: Input DataFrame with SINASC data
+        
+    Returns:
+        Cleaned DataFrame with unknown flags replaced by NaN
+    """
+    print("🧹 Replacing unknown flags from integer columns...")
+    cleaning_log = []
+    # 2. Replace known "unknown" codes with NaN for integer columns
+    for col, unknown_value in NUMERICAL_WITH_UNKNOWN_FLAGS.items():
+        if col in df.columns:
+            unknown_count = (df[col] == unknown_value).sum()
+            if unknown_count > 0:
+                df.loc[df[col] == unknown_value, col] = pd.NA
+                cleaning_log.append(f"⚠️ Replaced {unknown_count} '{unknown_value}' entries with NaN in '{col}'")
+
+    # 4. Basic statistics
+    cleaning_log.append(f"📊 Final dataset shape: {df.shape}")
+
+    # Print cleaning log
+    for log_entry in cleaning_log:
+        print(log_entry)
+
+    return df
+
+
 def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Optimize data types to reduce memory usage based on official SINASC schema
+    Optimize data types to reduce memory usage based on official SINASC schema.
+    
+    Args:
+        df: Input DataFrame with raw SINASC data
+        
+    Returns:
+        Optimized DataFrame with proper data types
     """
+
+    check_data(df)
+
     print("🔧 Optimizing data types based on official SINASC schema...")
     original_memory = df.memory_usage(deep=True).sum() / 1024**2
 
@@ -124,6 +185,8 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
             for col in cols:
                 print(f"⚠️  Could not convert {col} to {target_type}: {str(e)[:80]}...")
 
+    df = clean_unknown_sinasc_data(df)
+
     optimized_memory = df.memory_usage(deep=True).sum() / 1024**2
     reduction_percent = (original_memory - optimized_memory) / original_memory * 100
 
@@ -135,51 +198,41 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def clean_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
-    print("🧹 Starting cleaning empty rows...")
-    cleaning_log = []
-    # 1. Check for completely empty rows
-    empty_rows = df.isnull().all(axis=1).sum()
-    if empty_rows > 0:
-        df = df.dropna(how="all")
-        cleaning_log.append(f"🗑️  Removed {empty_rows} completely empty rows")
-
-    for log_entry in cleaning_log:
-        print(log_entry)
-
-    return df
+# Default configuration
+DIR = "data/SINASC"
+YEAR = 2024
 
 
-def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Perform initial data cleaning based on SINASC specifications
-    """
-    print("🧹 Starting replacing unknown flags from integer columns...")
-    cleaning_log = []
-    # 2. Replace known "unknown" codes with NaN for integer columns
-    for col, unknown_value in NUMERICAL_WITH_UNKNOWN_FLAGS.items():
-        if col in df.columns:
-            unknown_count = (df[col] == unknown_value).sum()
-            if unknown_count > 0:
-                df.loc[df[col] == unknown_value, col] = pd.NA
-                cleaning_log.append(f"⚠️ Replaced {unknown_count} '{unknown_value}' entries with NaN in '{col}'")
+def main():
+    """Main execution function."""
+    import argparse
 
-    # 4. Basic statistics
-    cleaning_log.append(f"📊 Final dataset shape: {df.shape}")
+    parser = argparse.ArgumentParser(description="Clean and optimize SINASC data for a given year")
+    parser.add_argument("year", type=int, default=YEAR, help="Year to process")
+    parser.add_argument("--data_dir", default=DIR, help="Data directory")
+    args = parser.parse_args()
 
-    # Print cleaning log
-    for log_entry in cleaning_log:
-        print(log_entry)
+    # Define paths
+    input_path = os.path.join(args.data_dir, str(args.year), "raw.parquet")
+    output_path = os.path.join(args.data_dir, str(args.year), "clean.parquet")
 
-    return df
+    print(f"\n{'=' * 60}")
+    print(f"Cleaning SINASC Data: {args.year}")
+    print(f"{'=' * 60}\n")
+
+    # Load data
+    print(f"📥 Loading data from {input_path}...")
+    data = pd.read_parquet(input_path)
+    print(f"  ✅ Loaded {len(data):,} records\n")
+
+    # Clean and optimize
+    data = optimize_data_types(data)
+
+    # Save results
+    print(f"\n💾 Saving cleaned data to {output_path}...")
+    data.to_parquet(output_path)
+    print("  ✅ Saved successfully\n")
 
 
 if __name__ == "__main__":
-    # Example usage
-    data = pd.read_parquet("data/SINASC/2024/raw.parquet")
-    # Apply optimizations
-    check_data(data)
-    data = optimize_data_types(data)
-    data = clean_empty_rows(data)
-    data = clean_unknown_sinasc_data(data)
-    data.to_parquet("data/SINASC/2024/clean.parquet", index=False)
+    main()
