@@ -54,13 +54,16 @@ ESSENTIAL_COLUMNS = [
     "TPROBSON",  # robson
     # Newborn health
     "PESO",
-    "APGAR1",
+    # "APGAR1",
     "APGAR5",
     # Engineered
     "IDADEMAEBIN",  #
     "PESOBIN",
     "DESLOCNASCBOOL",
     "OCUPMAE",
+    "ESTABPUB",
+    "ESTABOBS",
+    "EVOAPGAR",
 ]
 
 
@@ -123,16 +126,16 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
     monthly = df.groupby("year_month").agg(
         {
             "DTNASC": "count",  # Total births
-            "PESO": ["mean", "median", "std"],
-            "IDADEMAE": ["mean", "median", "std"],
-            "SEMAGESTAC": ["mean", "median", "std"],  # Gestational weeks
-            "APGAR1": "mean",
-            "APGAR5": "mean",
+            "PESO": "mean",
+            "IDADEMAE": "mean",
+            "SEMAGESTAC": "mean",  # Gestational weeks
+            "APGAR5": ["mean"],
         }
     )
 
     # Flatten column names
     monthly.columns = ["_".join(col).strip() for col in monthly.columns.values]
+    print(monthly.columns)
     monthly = monthly.rename(columns={"DTNASC_count": "total_births"})
 
     # Add categorical aggregates
@@ -143,6 +146,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["cesarean_pct"] = cesarean_rate
+        monthly["cesarean_count"] = (monthly["total_births"] * monthly["cesarean_pct"] / 100).round().astype(int)
 
     if "GRAVIDEZ" in df.columns:
         # Convert to numeric for comparison
@@ -247,11 +251,10 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
     state_agg = df.groupby("state_code").agg(
         {
             "CODMUNNASC": "count",  # Total births
-            "PESO": ["mean", "median", "std"],
-            "IDADEMAE": ["mean", "median"],
-            "SEMAGESTAC": ["mean", "median"],  # Gestational weeks
-            "APGAR1": "mean",
-            "APGAR5": "mean",
+            "PESO": "mean",
+            "IDADEMAE": "mean",
+            "SEMAGESTAC": "mean",  # Gestational weeks
+            "APGAR5": ["mean"],
         }
     )
 
@@ -266,6 +269,7 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
             include_groups=False,  # type: ignore
         )  # type: ignore
         state_agg["cesarean_pct"] = cesarean_rate
+        state_agg["cesarean_count"] = (state_agg["total_births"] * state_agg["cesarean_pct"] / 100).round().astype(int)
 
     if "GRAVIDEZ" in df.columns:
         multiple_rate = df.groupby("state_code").apply(
@@ -295,6 +299,23 @@ def create_state_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> str
         )  # type: ignore
         state_agg["extreme_preterm_rate_pct"] = extreme_preterm_rate
         state_agg["extreme_preterm_rate_count"] = (state_agg["total_births"] * state_agg["extreme_preterm_rate_pct"] / 100).round().astype(int)
+
+    # Add adolescent pregnancies (IDADEMAE < 20)
+    if "IDADEMAE" in df.columns:
+        adolescent_rate = df.groupby("state_code").apply(
+            lambda x: (pd.to_numeric(x["IDADEMAE"], errors="coerce") < 20).mean() * 100,  # type: ignore
+            include_groups=False,  # type: ignore
+        )  # type: ignore
+        state_agg["adolescent_pregnancy_pct"] = adolescent_rate
+        state_agg["adolescent_pregnancy_count"] = (state_agg["total_births"] * state_agg["adolescent_pregnancy_pct"] / 100).round().astype(int)
+
+        # Add very young pregnancies (IDADEMAE < 15)
+        very_young_rate = df.groupby("state_code").apply(
+            lambda x: (pd.to_numeric(x["IDADEMAE"], errors="coerce") < 15).mean() * 100,  # type: ignore
+            include_groups=False,  # type: ignore
+        )  # type: ignore
+        state_agg["very_young_pregnancy_pct"] = very_young_rate
+        state_agg["very_young_pregnancy_count"] = (state_agg["total_births"] * state_agg["very_young_pregnancy_pct"] / 100).round().astype(int)
 
     # Add low birth weight (PESO < 2500g)
     if "PESO" in df.columns:
@@ -347,9 +368,9 @@ def create_municipality_aggregates(df: pd.DataFrame, year: int, output_dir: str,
     mun_agg = df.groupby("CODMUNNASC").agg(
         {
             "CODMUNNASC": "count",  # Total births
-            "PESO": ["mean", "median"],
+            "PESO": "mean",
             "IDADEMAE": "mean",
-            "APGAR5": "mean",
+            "APGAR5": ["mean"],
         }
     )
 
@@ -458,8 +479,8 @@ def create_yearly_summary(df: pd.DataFrame, year: int, output_dir: str) -> dict:
     if "OCUPMAE" in df.columns:
         summary["maternal_occupation"] = {}
         ocup_labels = {
-            1: "Trabalhadora do Lar",
-            2: "Estudante",
+            1: "Estudante",
+            2: "Trabalhadora do Lar",
             3: "Trabalhadora Rural",
             4: "Profissionais das Ciências e das Artes",
             5: "Técnicos e Profissionais de Nível Médio",
@@ -527,13 +548,8 @@ def create_yearly_aggregates(output_dir: str) -> str:
             "year": year,
             "total_births": df_monthly["total_births"].sum(),
             "birth_weight_mean": df_monthly["PESO_mean"].mean(),
-            "birth_weight_median": df_monthly["PESO_median"].mean(),
-            "birth_weight_std": df_monthly["PESO_std"].mean(),
             "mother_age_mean": df_monthly["IDADEMAE_mean"].mean(),
-            "mother_age_median": df_monthly["IDADEMAE_median"].mean(),
             "gestational_age_mean": df_monthly["SEMAGESTAC_mean"].mean() if "SEMAGESTAC_mean" in df_monthly.columns else None,
-            "gestational_age_median": df_monthly["SEMAGESTAC_median"].mean() if "SEMAGESTAC_median" in df_monthly.columns else None,
-            "APGAR1_mean": df_monthly["APGAR1_mean"].mean(),
             "APGAR5_mean": df_monthly["APGAR5_mean"].mean(),
             "cesarean_pct": df_monthly["cesarean_pct"].mean(),
             "multiple_pregnancy_pct": df_monthly["multiple_pregnancy_pct"].mean(),
@@ -690,7 +706,7 @@ def create_metadata(summaries: list[dict], output_dir: str) -> str:
     return output_path
 
 
-def process_year(year: int, data_dir: str, output_dir: str, dataset: str = "complete") -> dict:
+def process_year(year: int, data_dir: str, output_dir: str, dataset: str = "complete.parquet") -> dict:
     """
     Process a single year and create all dashboard files.
 
@@ -708,7 +724,7 @@ def process_year(year: int, data_dir: str, output_dir: str, dataset: str = "comp
     print(f"{'=' * 60}\n")
 
     # Load data
-    input_path = os.path.join(data_dir, str(year), f"{dataset}.parquet")
+    input_path = os.path.join(data_dir, str(year), dataset)
 
     if not os.path.exists(input_path):
         print(f"  ⚠️  File not found: {input_path}")
@@ -737,8 +753,7 @@ def main():
     parser.add_argument("--all", action="store_true", help="Process all available years")
     parser.add_argument("--data_dir", default="data/SINASC", help="Data directory")
     parser.add_argument("--output_dir", default="dashboard_data", help="Output directory")
-    parser.add_argument("--dataset", default="complete", help="Dataset name (default: complete)")
-
+    parser.add_argument("--input_name", default="engineered_features.parquet", help="Input file name")
     args = parser.parse_args()
 
     # Create output directory
@@ -751,9 +766,10 @@ def main():
         for item in os.listdir(args.data_dir):
             year_path = os.path.join(args.data_dir, item)
             if os.path.isdir(year_path) and item.isdigit():
-                complete_path = os.path.join(year_path, f"{args.dataset}.parquet")
+                complete_path = os.path.join(year_path, args.input_name)
                 if os.path.exists(complete_path):
                     years.append(int(item))
+
         years = sorted(years)
         print(f"Found {len(years)} years to process: {years}")
     elif args.year:
@@ -765,7 +781,7 @@ def main():
     # Process each year
     summaries = []
     for year in years:
-        summary = process_year(year, args.data_dir, args.output_dir, args.dataset)
+        summary = process_year(year, args.data_dir, args.output_dir, args.input_name)
         if summary:
             summaries.append(summary)
 

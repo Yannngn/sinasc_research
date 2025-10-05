@@ -25,3 +25,6 @@ notebok = [
     "ipywidgets>=8.1.7",
     "notebook>=7.4.7",
 ]
+
+[tool.ruff]
+line-length = 144

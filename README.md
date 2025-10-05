@@ -66,29 +66,28 @@ sinasc_research/
 ├── dashboard/              # Dashboard application
 │   ├── app.py             # Main entry point
 │   ├── pages/             # Dashboard pages
-│   │   ├── home.py        # Multi-year overview
-│   │   └── annual.py      # Single-year analysis
 │   ├── components/        # Reusable UI components
-│   ├── data/              # Data loading utilities
-│   ├── config/            # Settings and constants
-│   └── assets/            # CSS and static files
-├── dashboard_data/        # Pre-aggregated data files
-│   ├── yearly.parquet     # 5-year summary
-│   ├── monthly_*.parquet  # Monthly aggregates
-│   └── years/*.parquet    # Detailed annual data
-├── data/                  # Raw SINASC data (not in repo)
-├── scripts/               # Data processing and deployment scripts
-└── docs/                  # Documentation
+│   └── ...
+├── dashboard_data/         # Pre-aggregated data files for the dashboard
+├── deployment/             # All deployment configurations (Dockerfile, render.yaml, etc.)
+├── src/                   # Data processing and utility scripts
+│   ├── README.md          # Guide to running the pipeline
+│   ├── run_pipeline.py    # Main orchestrator for data processing
+│   ├── pipeline/          # Sequenced data processing steps
+│   ├── deployment/        # Deployment preparation scripts
+│   └── utils/             # Shared utility modules
+├── docs/                   # Project documentation
+└── data/                   # Raw data source (not in repo)
 ```
 
 ## 📚 Documentation
 
 - **[Dashboard README](dashboard/README.md)**: Detailed dashboard architecture and features
-- **[Quick Start Guide](dashboard/QUICKSTART.md)**: Getting started with the dashboard
-- **[Structure Guide](dashboard/STRUCTURE.md)**: Dashboard page organization
-- **[Design System](dashboard/DESIGN_SYSTEM.md)**: UI/UX design patterns
-- **[Architecture](dashboard/ARCHITECTURE.md)**: Technical architecture details
-- **[Deployment Guide](docs/DEPLOY_README.md)**: How to deploy to production
+- **[Quick Start Guide](docs/QUICKSTART.md)**: Getting started with the dashboard
+- **[Structure Guide](docs/STRUCTURE.md)**: Dashboard page organization
+- **[Design System](docs/DESIGN_SYSTEM.md)**: UI/UX design patterns
+- **[Architecture](docs/ARCHITECTURE.md)**: Technical architecture details
+- **[Deployment Guide](deployment/README.md)**: How to deploy to production
 
 ## 🌐 Deployment
 
@@ -98,7 +97,7 @@ The dashboard is optimized for free-tier hosting:
 - **Memory usage**: <200MB RAM
 - **Recommended**: Render.com (free tier with 512MB RAM)
 
-See [Deployment Guide](docs/DEPLOY_README.md) for detailed instructions.
+See [Deployment Guide](docs/DEPLOYMENT_README.md) for detailed instructions.
 
 ## 📊 Data Source
 

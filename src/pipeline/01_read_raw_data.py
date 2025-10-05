@@ -50,7 +50,7 @@ def _request_zip(year: int):
             return pd.read_csv(f, sep=";", low_memory=False, encoding="utf-8", dtype=str)
 
 
-def _request(year: int, outpath: str):
+def _request(year: int) -> pd.DataFrame:
     """Download and save SINASC data trying CSV then ZIP endpoints."""
     try:
         data = _request_csv(year)
@@ -65,32 +65,28 @@ def _request(year: int, outpath: str):
     elif "CONTADOR" in data.columns:
         data.set_index("CONTADOR", inplace=True)
 
-    data.to_parquet(outpath, index=False)
-
-    print(f"✅ Saved raw API response to {outpath}")
+    return data
 
 
-def load_data(year: int, output_dir: str, overwrite: bool = False):
+def load_data(year: int, input_path: str = "raw.parquet", overwrite: bool = False):
     """
     Load SINASC data from file or download from API.
 
     Args:
         year: Year to load
-        output_dir: Output directory for saved files
+        input_path: Path to input Parquet file
         overwrite: Whether to redownload even if file exists
 
     Returns:
         DataFrame with raw SINASC data
     """
-    path_ = os.path.join(output_dir, str(year))
-    os.makedirs(path_, exist_ok=True)
 
-    parquet_file = os.path.join(path_, "raw.parquet")
+    if overwrite or not file_exists(input_path):
+        data = _request(year)
+        data.to_parquet(input_path, index=False)  # securing raw copy
+        return data
 
-    if overwrite or not file_exists(parquet_file):
-        _request(year, parquet_file)
-
-    return pd.read_parquet(parquet_file)
+    return pd.read_parquet(input_path)
 
 
 # Default configuration
@@ -106,16 +102,24 @@ def main():
     parser.add_argument("year", type=int, default=YEAR, help="Year to download")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing data")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")
+    parser.add_argument("--input_name", default="raw.parquet", help="Input file name")
+    parser.add_argument("--output_name", default="raw.parquet", help="Output file name")
     args = parser.parse_args()
 
     print(f"\n{'=' * 60}")
     print(f"Downloading SINASC Data: {args.year}")
     print(f"{'=' * 60}\n")
 
+    path_ = os.path.join(args.data_dir, str(args.year))
+    os.makedirs(path_, exist_ok=True)
+    input_path = os.path.join(path_, args.input_name)
+    output_file = os.path.join(path_, args.output_name)
+
     # Download data
-    df = load_data(args.year, output_dir=args.data_dir, overwrite=args.overwrite)
+    data = load_data(args.year, input_path=input_path, overwrite=args.overwrite)
+    data.to_parquet(output_file, index=False)
     print(f"\n✅ Data loaded for year {args.year}")
-    print(f"   Shape: {df.shape[0]:,} records, {df.shape[1]} columns\n")
+    print(f"   Shape: {data.shape[0]:,} records, {data.shape[1]} columns\n")
 
 
 if __name__ == "__main__":

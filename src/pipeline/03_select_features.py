@@ -82,7 +82,8 @@ def main():
     parser = argparse.ArgumentParser(description="Feature selection for SINASC data")
     parser.add_argument("year", type=int, default=YEAR, help="Year to process")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")
-    parser.add_argument("--dataset", default=DATASET, help="Dataset name")
+    parser.add_argument("--input_name", default="clean.parquet", help="Input file name")
+    parser.add_argument("--output_name", default="selected.parquet", help="Output file name")
     parser.add_argument(
         "--selected_features",
         nargs="+",
@@ -92,8 +93,8 @@ def main():
     args = parser.parse_args()
 
     # Define paths
-    input_path = os.path.join(args.data_dir, str(args.year), f"{args.dataset}.parquet")
-    output_path = os.path.join(args.data_dir, str(args.year), "selected_features.parquet")
+    input_path = os.path.join(args.data_dir, str(args.year), args.input_name)
+    output_path = os.path.join(args.data_dir, str(args.year), args.output_name)
 
     print(f"\n{'=' * 60}")
     print(f"Feature Selection: {args.year}")

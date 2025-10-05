@@ -4,11 +4,15 @@ Data loading utilities for SINASC Dashboard.
 
 import json
 from functools import lru_cache
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import pandas as pd
-from config.settings import AGGREGATES_DIR, CACHE_SIZE, METADATA_PATH, YEARS_DIR
 from config.constants import MONTH_NAMES
+from config.settings import AGGREGATES_DIR, CACHE_SIZE, METADATA_PATH, YEARS_DIR
+
+# Path to IBGE data directory
+IBGE_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "IBGE"
 
 
 class DataLoader:
@@ -168,6 +172,69 @@ class DataLoader:
         """
         summary = self.get_year_summary(year)
         return summary.get("date_range", {})
+
+    @lru_cache(maxsize=1)
+    def load_brazil_geojson(self) -> Dict:
+        """
+        Load Brazilian states GeoJSON for choropleth maps.
+
+        Returns:
+            GeoJSON FeatureCollection with state boundaries
+        """
+        geojson_path = IBGE_DATA_DIR / "brazil_states.geojson"
+        if not geojson_path.exists():
+            raise FileNotFoundError(f"GeoJSON not found: {geojson_path}. Run scripts/fetch_geo_data.py first.")
+
+        with open(geojson_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    @lru_cache(maxsize=10)
+    def load_population_data(self, year: Optional[int] = None) -> pd.DataFrame:
+        """
+        Load population estimates by state.
+
+        Args:
+            year: Optional year to filter (loads all years if None)
+
+        Returns:
+            DataFrame with columns: state_code, state_name, year, population
+        """
+        csv_path = IBGE_DATA_DIR / "state_population_estimates.csv"
+        if not csv_path.exists():
+            raise FileNotFoundError(f"Population data not found: {csv_path}. Run scripts/fetch_geo_data.py first.")
+
+        df = pd.read_csv(csv_path)
+
+        if year is not None:
+            df = df[df["year"] == year].copy()
+
+        return df
+
+    @lru_cache(maxsize=10)
+    def load_state_aggregates_with_population(self, year: int) -> pd.DataFrame:
+        """
+        Load state aggregates merged with population data for per-capita calculations.
+
+        Args:
+            year: Year to load
+
+        Returns:
+            DataFrame with state aggregates + population column
+        """
+        # Load state aggregates
+        state_df = self.load_state_aggregates(year)
+
+        # Load population data
+        pop_df = self.load_population_data(year)
+
+        # Merge on state_code
+        merged_df = state_df.merge(pop_df[["state_code", "population"]], on="state_code", how="left")
+
+        # Calculate per-capita rates (births per 10,000 population)
+        if "total_births" in merged_df.columns:
+            merged_df["births_per_10k"] = (merged_df["total_births"] / merged_df["population"]) * 10000
+
+        return merged_df
 
 
 # Global data loader instance
