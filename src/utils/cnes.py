@@ -14,6 +14,7 @@ CNES_COLUMNS = [
     "CO_UNIDADE",
     "CO_UF",
     "CO_IBGE",
+    "CO_NATUREZA_JUR",
     "NO_FANTASIA",
     "TP_UNIDADE",
     "CO_CEP",
@@ -21,6 +22,7 @@ CNES_COLUMNS = [
     "NO_BAIRRO",
     "NU_LATITUDE",
     "NU_LONGITUDE",
+    "ST_CENTRO_OBSTETRICO",
 ]
 
 

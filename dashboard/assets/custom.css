@@ -193,7 +193,7 @@ small {
 }
 
 .navbar-brand::before {
-    content: "📊";
+    content: "";
     font-size: 1.75rem;
 }
 
@@ -374,7 +374,6 @@ small {
    ============================================ */
 
 .container-fluid {
-    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -543,47 +542,6 @@ input:focus {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-/* Icon color enhancements */
-.fa-baby {
-    color: var(--primary-600) !important;
-}
-
-.fa-weight-hanging {
-    color: var(--warning-dark) !important;
-}
-
-.fa-user-friends {
-    color: var(--info-dark) !important;
-}
-
-.fa-heartbeat {
-    color: var(--danger) !important;
-}
-
-.fa-procedures {
-    color: var(--warning) !important;
-}
-
-.fa-exclamation-triangle {
-    color: var(--danger) !important;
-}
-
-.fa-hospital {
-    color: var(--primary-600) !important;
-}
-
-.fa-female {
-    color: var(--info) !important;
-}
-
-.fa-weight {
-    color: var(--success) !important;
-}
-
-.fa-calendar-alt {
-    color: var(--gray-600) !important;
-}
-
 /* Progress indicators */
 .border-bottom {
     border-color: var(--gray-200) !important;
@@ -600,6 +558,51 @@ input:focus {
 
 .shadow-lg {
     box-shadow: var(--shadow-lg) !important;
+}
+
+/* ============================================
+   CUSTOM TAB STYLES FOR YEAR CARDS
+   ============================================ */
+
+/* Custom tabs styling */
+.nav-tabs-custom {
+    border-bottom: 2px solid var(--primary-500);
+}
+
+.nav-tabs-custom .nav-link {
+    color: var(--gray-600);
+    font-weight: 500;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs-custom .nav-link:hover {
+    color: var(--primary-600);
+    background-color: var(--primary-50);
+    border-bottom-color: var(--primary-300);
+}
+
+.nav-tabs-custom .nav-link.active {
+    color: var(--primary-700);
+    background-color: var(--primary-50);
+    border-bottom-color: var(--primary-600);
+    font-weight: 600;
+}
+
+/* Compact year cards layout */
+@media (min-width: 1400px) {
+    .year-card-compact {
+        max-width: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-tabs-custom .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
 }
 
 /* ============================================

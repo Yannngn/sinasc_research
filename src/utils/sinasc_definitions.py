@@ -87,9 +87,30 @@ SINASC_COLUMNS = {
 }
 
 VALUE_MAPPINGS = {
-    "LOCNASC": {1: "Hospital", 2: "Outros estabelecimentos de saúde", 3: "Domicílio", 4: "Outros", 5: "Aldeia Indígena", 9: "Ignorado"},
-    "ESTCIVMAE": {1: "Solteira", 2: "Casada", 3: "Viúva", 4: "Separada judicialmente/divorciada", 5: "União estável", 9: "Ignorada"},
-    "ESCMAE": {1: "Nenhuma", 2: "1 a 3 anos", 3: "4 a 7 anos", 4: "8 a 11 anos", 5: "12 e mais", 9: "Ignorado"},
+    "LOCNASC": {
+        1: "Hospital",
+        2: "Outros estabelecimentos de saúde",
+        3: "Domicílio",
+        4: "Outros",
+        5: "Aldeia Indígena",
+        9: "Ignorado",
+    },
+    "ESTCIVMAE": {
+        1: "Solteira",
+        2: "Casada",
+        3: "Viúva",
+        4: "Separada judicialmente/divorciada",
+        5: "União estável",
+        9: "Ignorada",
+    },
+    "ESCMAE": {
+        1: "Nenhuma",
+        2: "1 a 3 anos",
+        3: "4 a 7 anos",
+        4: "8 a 11 anos",
+        5: "12 e mais",
+        9: "Ignorado",
+    },
     "GESTACAO": {
         1: "Menos de 22 semanas",
         2: "22 a 27 semanas",
@@ -101,7 +122,13 @@ VALUE_MAPPINGS = {
     },
     "GRAVIDEZ": {1: "Única", 2: "Dupla", 3: "Tripla ou mais", 9: "Ignorado"},
     "PARTO": {1: "Vaginal", 2: "Cesário", 9: "Ignorado"},
-    "CONSULTAS": {1: "Nenhuma", 2: "de 1 a 3", 3: "de 4 a 6", 4: "7 e mais", 9: "Ignorado"},
+    "CONSULTAS": {
+        1: "Nenhuma",
+        2: "de 1 a 3",
+        3: "de 4 a 6",
+        4: "7 e mais",
+        9: "Ignorado",
+    },
     "SEXO": {0: "Ignorado", 1: "Masculino", 2: "Feminino"},
     "RACACOR": {1: "Branca", 2: "Preta", 3: "Amarela", 4: "Parda", 5: "Indígena"},
     "RACACORMAE": {1: "Branca", 2: "Preta", 3: "Amarela", 4: "Parda", 5: "Indígena"},
@@ -118,10 +145,21 @@ VALUE_MAPPINGS = {
         9: "Ignorado",
     },
     "TPMETESTIM": {1: "Exame físico", 2: "Outro método", 9: "Ignorado"},
-    "TPAPRESENT": {1: "Cefálico", 2: "Pélvica ou podálica", 3: "Transversa", 9: "Ignorado"},
+    "TPAPRESENT": {
+        1: "Cefálico",
+        2: "Pélvica ou podálica",
+        3: "Transversa",
+        9: "Ignorado",
+    },
     "STTRABPART": {1: "Sim", 2: "Não", 3: "Não se aplica", 9: "Ignorado"},
     "STCESPARTO": {1: "Sim", 2: "Não", 3: "Não se aplica", 9: "Ignorado"},
-    "TPNASCASSI": {1: "Médico", 2: "Enfermagem ou Obstetriz", 3: "Parteira", 4: "Outros", 9: "Ignorado"},
+    "TPNASCASSI": {
+        1: "Médico",
+        2: "Enfermagem ou Obstetriz",
+        3: "Parteira",
+        4: "Outros",
+        9: "Ignorado",
+    },
     "ESCMAEAGR1": {
         0: "Sem Escolaridade",
         1: "Fundamental I Incompleto",
@@ -137,12 +175,23 @@ VALUE_MAPPINGS = {
         11: "Fundamental II Incompleto ou Inespecífico",
         12: "Ensino Médio Incompleto ou Inespecífico",
     },
-    "TPFUNCRESP": {1: "Médico", 2: "Enfermeiro", 3: "Parteira", 4: "Funcionário do cartório", 5: "Outros"},
+    "TPFUNCRESP": {
+        1: "Médico",
+        2: "Enfermeiro",
+        3: "Parteira",
+        4: "Funcionário do cartório",
+        5: "Outros",
+    },
     "TPDOCRESP": {1: "CNES", 2: "CRM", 3: "COREN", 4: "RG", 5: "CPF"},
     "STDNEPIDEM": {0: "Não", 1: "Sim"},
     "STDNNOVA": {0: "Não", 1: "Sim"},
     "PARIDADE": {0: "Nulípara", 1: "Multípara"},
-    "KOTELCHUCK": {1: "Inadequado", 2: "Intermediário", 3: "Adequado", 4: "Mais que adequado"},
+    "KOTELCHUCK": {
+        1: "Inadequado",
+        2: "Intermediário",
+        3: "Adequado",
+        4: "Mais que adequado",
+    },
 }
 
 COLUMN_RENAME_MAPPING = {

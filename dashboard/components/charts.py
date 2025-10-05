@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from config.settings import COLOR_PALETTE, COMMON_LAYOUT, LEGEND_CONFIG
 
 
-def format_brazilian_number(value: int) -> str:
+def format_brazilian_number(value: int | float) -> str:
     """
     Format integer with Brazilian number format (dots as thousands separator).
 
@@ -18,6 +18,9 @@ def format_brazilian_number(value: int) -> str:
     Returns:
         Formatted string (e.g., 1000 -> "1.000")
     """
+    if isinstance(value, float):
+        return f"{value:_}".replace(".", ",").replace("_", ".")
+
     return f"{int(value):_}".replace("_", ".")
 
 
@@ -224,7 +227,14 @@ def create_stacked_bar_chart(
 
 
 def create_multi_line_chart(
-    df, x_col: str, y_cols: list, labels: list, colors: list, x_title: str, y_title: str, reference_line: dict | None = None
+    df,
+    x_col: str,
+    y_cols: list,
+    labels: list,
+    colors: list,
+    x_title: str,
+    y_title: str,
+    reference_line: dict | None = None,
 ) -> go.Figure:
     """
     Create a chart with multiple line traces.

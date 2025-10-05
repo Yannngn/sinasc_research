@@ -17,9 +17,18 @@ Usage:
 import argparse
 import json
 import os
+import sys
 
 import numpy as np
 import pandas as pd
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+
+from utils.calculate_weight_stats import calculate_weight_percentile, save_stats_column
+
+STATS_COLUMNS = {"PESOPERC": "PERC"}
+
+CNES_COLUMNS = {"ESTABPUB": "CO_NATUREZA_JUR", "ESTABOBS": "ST_CENTRO_OBSTETRICO"}
 
 BOOL_COLUMNS = {
     "PRIMEGEST": (
@@ -65,17 +74,42 @@ BIN_COLUMNS = {
     "IDADEMAE": (
         [8, 13, 17, 25, 35, 40, 50, 99],
         [1, 2, 3, 4, 5, 6, 7],
-        ["Menor que 13", "13-16", "17-24", "25-34", "35-39", "40-49", "50 ou mais", "Ignorado"],
+        [
+            "Menor que 13",
+            "13-16",
+            "17-24",
+            "25-34",
+            "35-39",
+            "40-49",
+            "50 ou mais",
+            "Ignorado",
+        ],
     ),
     "IDADEPAI": (
         [8, 13, 17, 25, 35, 50, 65, 99],
         [1, 2, 3, 4, 5, 6, 7],
-        ["Menor que 13", "13-16", "17-24", "25-34", "35-49", "50-64", "65 ou mais", "Ignorado"],
+        [
+            "Menor que 13",
+            "13-16",
+            "17-24",
+            "25-34",
+            "35-49",
+            "50-64",
+            "65 ou mais",
+            "Ignorado",
+        ],
     ),
     "PESO": (
         [100, 1000, 1500, 2500, 4000, 7000],
         [1, 2, 3, 4, 5],
-        ["Menor que 1000g", "1000-1499g", "1500-2499g", "2500-3999g", "4000g ou mais", "Ignorado"],
+        [
+            "Menor que 1000g",
+            "1000-1499g",
+            "1500-2499g",
+            "2500-3999g",
+            "4000g ou mais",
+            "Ignorado",
+        ],
     ),
     "PESOPERC": (
         [0, 0.10, 0.90, 1.0],
@@ -121,6 +155,57 @@ TIME_COLUMNS = {
         ["00:00-05:59", "06:00-11:59", "12:00-17:59", "18:00-23:59", "Ignorado"],
     ),
 }
+
+
+def apgar_feature(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create APGAR evolution feature based on 1-minute and 5-minute scores.
+
+    Categories:
+    - Normal: Both scores >= 7
+    - Desconforto Superado: 1min < 7, 5min >= 7 (improved)
+    - Desconforto Tardio: 1min >= 7, 5min < 7 (deteriorated)
+    - Desconforto Mantido: Both scores < 7 (persistent distress)
+
+    Args:
+        df: Input DataFrame with APGAR1 and APGAR5 columns
+
+    Returns:
+        DataFrame with EVOAPGAR categorical column
+    """
+    df["EVOAPGAR"] = pd.NA
+
+    mask_normal = (df["APGAR1"] >= 7) & (df["APGAR5"] >= 7)
+    df.loc[mask_normal, "EVOAPGAR"] = 1
+
+    mask_superado = (df["APGAR1"] < 7) & (df["APGAR5"] >= 7)
+    df.loc[mask_superado, "EVOAPGAR"] = 2
+
+    mask_tardio = (df["APGAR1"] >= 7) & (df["APGAR5"] < 7)
+    df.loc[mask_tardio, "EVOAPGAR"] = 3
+
+    mask_mantido = (df["APGAR1"] < 7) & (df["APGAR5"] < 7)
+    df.loc[mask_mantido, "EVOAPGAR"] = 4
+
+    df["EVOAPGAR"] = df["EVOAPGAR"].fillna(9).astype("Int8").astype("category")
+
+    return df
+
+
+def cnes_feature(df: pd.DataFrame, cnes_df: pd.DataFrame | None = None) -> pd.DataFrame:
+    if cnes_df is None:
+        cnes_df = pd.read_csv("data/CNES/estabelecimentos_cnes.csv", dtype=str)
+
+    df["ESTABPUB"] = df["CODESTAB"].map(cnes_df.set_index("CO_CNES")["CO_NATUREZA_JUR"]).str.startswith("1").astype("boolean")
+    df["ESTABOBS"] = (
+        df["CODESTAB"]
+        .map(cnes_df.set_index("CO_CNES")["ST_CENTRO_OBSTETRICO"])
+        .pipe(lambda s: pd.to_numeric(s, errors="coerce"))
+        .ge(1)
+        .astype("boolean")
+    )
+
+    return df
 
 
 def new_category_column(df: pd.DataFrame, column: str, new_column: str, to_replace: list, bins: list) -> pd.DataFrame:
@@ -227,42 +312,6 @@ def bin_time_column(df: pd.DataFrame, column: str, bins: list[int], labels: list
     return df
 
 
-def apgar_feature(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create APGAR evolution feature based on 1-minute and 5-minute scores.
-
-    Categories:
-    - Normal: Both scores >= 7
-    - Desconforto Superado: 1min < 7, 5min >= 7 (improved)
-    - Desconforto Tardio: 1min >= 7, 5min < 7 (deteriorated)
-    - Desconforto Mantido: Both scores < 7 (persistent distress)
-
-    Args:
-        df: Input DataFrame with APGAR1 and APGAR5 columns
-
-    Returns:
-        DataFrame with EVOAPGAR categorical column
-    """
-    df["EVOAPGAR"] = pd.NA
-
-    mask_normal = (df["APGAR1"] >= 7) & (df["APGAR5"] >= 7)
-    df.loc[mask_normal, "EVOAPGAR"] = 1
-
-    mask_superado = (df["APGAR1"] < 7) & (df["APGAR5"] >= 7)
-    df.loc[mask_superado, "EVOAPGAR"] = 2
-
-    mask_tardio = (df["APGAR1"] >= 7) & (df["APGAR5"] < 7)
-    df.loc[mask_tardio, "EVOAPGAR"] = 3
-
-    mask_mantido = (df["APGAR1"] < 7) & (df["APGAR5"] < 7)
-    df.loc[mask_mantido, "EVOAPGAR"] = 4
-
-    df["EVOAPGAR"] = df["EVOAPGAR"].fillna(9).astype("Int8")
-    df["EVOAPGAR"] = df["EVOAPGAR"].astype("category")
-
-    return df
-
-
 def save_labels(output_path: str = "data/SINASC/engineered_categorical.json") -> None:
     """
     Save categorical labels for all engineered features to JSON file.
@@ -291,13 +340,19 @@ def save_labels(output_path: str = "data/SINASC/engineered_categorical.json") ->
         labels[col + "BIN"]["9"] = "Ignorado"
 
     # Add labels for APGAR evolution
-    labels["EVOAPGAR"] = {"1": "Normal", "2": "Desconforto Superado", "3": "Desconforto Tardio", "4": "Desconforto Mantido", "9": "Ignorado"}
+    labels["EVOAPGAR"] = {
+        "1": "Normal",
+        "2": "Desconforto Superado",
+        "3": "Desconforto Tardio",
+        "4": "Desconforto Mantido",
+        "9": "Ignorado",
+    }
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(labels, f, ensure_ascii=False, indent=4)
 
 
-def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
+def feature_engineering(df: pd.DataFrame, year: int, overwrite: bool = False) -> pd.DataFrame:
     """
     Execute complete feature engineering pipeline.
 
@@ -316,6 +371,19 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     """
     print("🚀 Starting feature engineering...")
 
+    if STATS_COLUMNS:
+        print("Creating stats columns...")
+        for col, source_col in STATS_COLUMNS.items():
+            df[col] = calculate_weight_percentile(
+                weight=df["PESO"],
+                sex=df["SEXO"],
+                gestational_age=df["SEMAGESTAC"],
+                stats_file=os.path.join("data/SINASC", str(year), "calculated_weight_percentiles.parquet"),
+                overwrite=overwrite,
+            ).astype("float32")
+
+            save_stats_column(df[col], os.path.join("data/SINASC", str(year), "calculated_weight_percentiles.parquet"))
+
     for col, (source_col, func) in BOOL_COLUMNS.items():
         print(f"Creating boolean column: {col} from {source_col}")
         df = bool_column(df, source_col, col, func)
@@ -332,15 +400,29 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = df[col].astype(dtype)  # type: ignore
 
     for col, (bins, bin_values, _) in BIN_COLUMNS.items():
-        print(f"Creating binned column: {col}")
-        df = bin_column(df, col, bins=bins, labels=list(map(str, bin_values)), new_column=col + "BIN")
-        df[col] = df[col].astype("category")
+        print(f"Creating binned column: {col + 'BIN'}")
+        df = bin_column(
+            df,
+            col,
+            bins=bins,
+            labels=list(map(str, bin_values)),
+            new_column=col + "BIN",
+        )
+        df[col + "BIN"] = df[col + "BIN"].astype("category")
 
     for col, (bins, bin_values, _) in TIME_COLUMNS.items():
-        print(f"Creating binned column: {col}")
-        df = bin_time_column(df, col, bins=bins, labels=list(map(str, bin_values)), new_column=col + "BIN")
-        df[col] = df[col].astype("category")
+        print(f"Creating binned column: {col + 'BIN'}")
+        df = bin_time_column(
+            df,
+            col,
+            bins=bins,
+            labels=list(map(str, bin_values)),
+            new_column=col + "BIN",
+        )
+        df[col + "BIN"] = df[col].astype("category")
 
+    df = apgar_feature(df)
+    df = cnes_feature(df)
     print("✅ Feature engineering completed.")
     save_labels()
     print("✅ Saved categorical labels.")
@@ -359,12 +441,15 @@ def main():
     parser = argparse.ArgumentParser(description="Feature engineering for SINASC data")
     parser.add_argument("year", type=int, default=YEAR, help="Year to process")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")
-    parser.add_argument("--dataset", default=DATASET, help="Dataset name (without extension)")
+    parser.add_argument("--input_name", default="selected.parquet", help="Input file name")
+    parser.add_argument("--output_name", default="engineered_features.parquet", help="Output file name")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing stats data")
+
     args = parser.parse_args()
 
     # Define paths
-    input_path = os.path.join(args.data_dir, str(args.year), f"{args.dataset}.parquet")
-    output_path = os.path.join(args.data_dir, str(args.year), "engineered_features.parquet")
+    input_path = os.path.join(args.data_dir, str(args.year), args.input_name)
+    output_path = os.path.join(args.data_dir, str(args.year), args.output_name)
 
     print(f"\n{'=' * 60}")
     print(f"Feature Engineering: {args.year}")
@@ -376,7 +461,7 @@ def main():
     print(f"  ✅ Loaded {len(df):,} records\n")
 
     # Engineer features
-    df_fe = feature_engineering(df)
+    df_fe = feature_engineering(df, args.year, args.overwrite)
 
     # Save results
     print(f"\n💾 Saving engineered data to {output_path}...")

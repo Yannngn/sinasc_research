@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Prepare SINASC Dashboard for Deployment (UV-aware)
+Prepare SINASC Dashboard for Deployment
 
 This script prepares your dashboard for production deployment by:
 1. Exporting requirements from UV environment (Python 3.13)
@@ -10,9 +10,12 @@ This script prepares your dashboard for production deployment by:
 """
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+DEPLOYMENT_CONFIG_DIR = "./deployment"
 
 
 def print_header(text: str):
@@ -27,7 +30,7 @@ def print_step(step: int, total: int, text: str):
     print(f"\n[{step}/{total}] {text}...")
 
 
-def export_uv_requirements():
+def export_requirements():
     """Export requirements from UV environment."""
     print_step(1, 8, "Exporting requirements from UV environment")
 
@@ -128,7 +131,7 @@ services:
         value: false
 """
 
-    with open("render.yaml", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "render.yaml"), "w") as f:
         f.write(render_yaml)
 
     print("  ✅ Created render.yaml")
@@ -141,7 +144,7 @@ def create_procfile():
     procfile = """web: cd dashboard && gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
 """
 
-    with open("Procfile", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "Procfile"), "w") as f:
         f.write(procfile)
 
     print("  ✅ Created Procfile")
@@ -153,7 +156,10 @@ def create_railway_config():
 
     railway_config = {
         "$schema": "https://railway.app/railway.schema.json",
-        "build": {"builder": "NIXPACKS", "buildCommand": "pip install -r dashboard/requirements.txt"},
+        "build": {
+            "builder": "NIXPACKS",
+            "buildCommand": "pip install -r dashboard/requirements.txt",
+        },
         "deploy": {
             "startCommand": "cd dashboard && gunicorn app:server --bind 0.0.0.0:$PORT --workers 2",
             "healthcheckPath": "/",
@@ -161,7 +167,7 @@ def create_railway_config():
         },
     }
 
-    with open("railway.json", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "railway.json"), "w") as f:
         json.dump(railway_config, f, indent=2)
 
     print("  ✅ Created railway.json")
@@ -235,11 +241,11 @@ CMD ["gunicorn", "--chdir", "dashboard", "app:server", "--bind", "0.0.0.0:8050",
 """
 
     # Write Python 3.12 version (default)
-    with open("Dockerfile", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "Dockerfile"), "w") as f:
         f.write(dockerfile_312)
 
     # Write Python 3.13 version (alternative)
-    with open("Dockerfile.python313", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "Dockerfile.python313"), "w") as f:
         f.write(dockerfile_313)
 
     # .dockerignore
@@ -269,7 +275,7 @@ notebooks/
 uv.lock
 """
 
-    with open(".dockerignore", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, ".dockerignore"), "w") as f:
         f.write(dockerignore)
 
     print("  ✅ Created Dockerfile (Python 3.12)")
@@ -296,7 +302,7 @@ def create_runtime_txt():
         runtime_version = f"python-{version_info.major}.{version_info.minor}.7"
         note = ""
 
-    with open("runtime.txt", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "runtime.txt"), "w") as f:
         f.write(f"{runtime_version}\n")
 
     print(f"  ✅ Created runtime.txt: {runtime_version}{note}")
@@ -327,7 +333,7 @@ def validate_deployment():
     # Check requirements
     if Path("dashboard/requirements.txt").exists():
         with open("dashboard/requirements.txt") as f:
-            lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+            lines = [line.strip() for line in f if line.strip() and not line.startswith("#")]
         checks.append(f"  ✅ Requirements.txt exists ({len(lines)} packages)")
 
         # Check for key packages
@@ -504,10 +510,10 @@ Before going live:
 **Questions?** Check DEPLOYMENT_GUIDE.md for detailed information!
 """
 
-    with open("DEPLOY_README.md", "w") as f:
+    with open(os.path.join(DEPLOYMENT_CONFIG_DIR, "README.md"), "w") as f:
         f.write(readme)
 
-    print("  ✅ Created DEPLOY_README.md")
+    print("  ✅ Created README.md")
 
 
 def print_summary():
@@ -516,7 +522,7 @@ def print_summary():
 
     summary = """
 Generated Files:
-  ✅ dashboard/requirements.txt      - From UV environment (Python 3.13)
+  ✅ dashboard/requirements.txt       - From UV environment (Python 3.13)
   ✅ runtime.txt                      - Python 3.12.7 for deployment
   ✅ render.yaml                      - Render.com config
   ✅ Procfile                         - Heroku-style platforms
@@ -527,13 +533,12 @@ Generated Files:
   ✅ DEPLOY_README.md                 - Quick start guide
 
 Python Version Strategy:
-  📍 Your Environment: Python 3.13.7 (UV)
+  📍 Your Environment: Python 3.13.7
   📍 Deployment: Python 3.12.7 (platform compatibility)
   ✅ All packages work on both versions
   💡 Use Dockerfile.python313 if you want 3.13 in Docker
 
 Next Steps:
-
   1️⃣  Review generated files:
       $ cat dashboard/requirements.txt
       $ cat runtime.txt
@@ -589,7 +594,7 @@ Why Python 3.12 for deployment?
 
 def main():
     """Main deployment preparation workflow."""
-    print_header("🚀 SINASC Dashboard - UV-Aware Deployment Preparation")
+    print_header("🚀 SINASC Dashboard - Deployment Preparation")
 
     print("This script will prepare your dashboard for production deployment.")
     print(f"Your environment: Python {sys.version.split()[0]}")
@@ -608,7 +613,7 @@ def main():
 
     try:
         # Run all preparation steps
-        if not export_uv_requirements():
+        if not export_requirements():
             print("\n❌ Failed to export requirements from UV")
             print("   Make sure you're in the UV environment:")
             print("   $ source .venv/bin/activate")

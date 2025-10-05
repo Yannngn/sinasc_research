@@ -244,9 +244,10 @@ parser.add_argument("--all", action="store_true", help="Process all available ye
 
 ## File Naming Standards
 
-### Scripts
-- Use snake_case: `clean_file.py`, `feature_engineering.py`
-- Descriptive verbs: `read_file.py`, `create_dashboard_data.py`
+#### Scripts
+- Use snake_case: `prepare_deployment.py`
+- Use numbered prefixes for pipeline steps: `01_read_raw_data.py`, `02_clean_data.py`
+- Use descriptive verbs for orchestrators: `run_pipeline.py`
 
 ### Data Files
 - Include year: `2024_essential.parquet`

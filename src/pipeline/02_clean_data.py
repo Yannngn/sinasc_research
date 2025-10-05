@@ -41,7 +41,7 @@ NUMERICAL_WITH_UNKNOWN_FLAGS = {
 def check_data(df: pd.DataFrame) -> None:
     """
     Validate DataFrame schema against official SINASC specification.
-    
+
     Args:
         df: Input DataFrame to validate
     """
@@ -82,10 +82,10 @@ def check_data(df: pd.DataFrame) -> None:
 def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Replace unknown value flags with NaN based on SINASC specifications.
-    
+
     Args:
         df: Input DataFrame with SINASC data
-        
+
     Returns:
         Cleaned DataFrame with unknown flags replaced by NaN
     """
@@ -98,7 +98,9 @@ def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
             if unknown_count > 0:
                 df.loc[df[col] == unknown_value, col] = pd.NA
                 cleaning_log.append(f"⚠️ Replaced {unknown_count} '{unknown_value}' entries with NaN in '{col}'")
+            # df[col] = pd.to_numeric(df[col], errors="coerce").astype("Int8")
 
+    # df["PESO"] = pd.to_numeric(df["PESO"], errors="coerce").astype("Int16")
     # 4. Basic statistics
     cleaning_log.append(f"📊 Final dataset shape: {df.shape}")
 
@@ -112,10 +114,10 @@ def clean_unknown_sinasc_data(df: pd.DataFrame) -> pd.DataFrame:
 def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     """
     Optimize data types to reduce memory usage based on official SINASC schema.
-    
+
     Args:
         df: Input DataFrame with raw SINASC data
-        
+
     Returns:
         Optimized DataFrame with proper data types
     """
@@ -155,6 +157,7 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
                 df[cols] = df[cols].astype("Int8").astype("boolean")
 
                 conversion_count += len(cols)
+
             elif target_type in ["Int8", "Int16", "Int32"]:
                 print(f"Converting integer columns: {cols}")
 
@@ -168,7 +171,11 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
                 for col in cols:
                     date_str = df[col].astype("string").str.replace(r"\.0$", "", regex=True).str.zfill(8)
                     valid_mask = date_str.str.match(r"^\d{8}$", na=False)
-                    df[col] = pd.to_datetime(date_str.where(valid_mask, pd.NA), format="%d%m%Y", errors="coerce")
+                    df[col] = pd.to_datetime(
+                        date_str.where(valid_mask, pd.NA),
+                        format="%d%m%Y",
+                        errors="coerce",
+                    )
 
                 conversion_count += len(cols)
             elif target_type == "time":
@@ -177,7 +184,11 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
                 for col in cols:
                     time_str = df[col].astype("string").str.replace(r"\.0$", "", regex=True).str.zfill(4)
                     valid_mask = time_str.str.match(r"^\d{4}$", na=False)
-                    df[col] = pd.to_datetime(time_str.where(valid_mask, pd.NA), format="%H%M", errors="coerce").dt.time
+                    df[col] = pd.to_datetime(
+                        time_str.where(valid_mask, pd.NA),
+                        format="%H%M",
+                        errors="coerce",
+                    ).dt.time
 
                 conversion_count += len(cols)
 
@@ -210,11 +221,14 @@ def main():
     parser = argparse.ArgumentParser(description="Clean and optimize SINASC data for a given year")
     parser.add_argument("year", type=int, default=YEAR, help="Year to process")
     parser.add_argument("--data_dir", default=DIR, help="Data directory")
+    parser.add_argument("--input_name", default="raw.parquet", help="Input file name")
+    parser.add_argument("--output_name", default="clean.parquet", help="Output file name")
+
     args = parser.parse_args()
 
     # Define paths
-    input_path = os.path.join(args.data_dir, str(args.year), "raw.parquet")
-    output_path = os.path.join(args.data_dir, str(args.year), "clean.parquet")
+    input_path = os.path.join(args.data_dir, str(args.year), args.input_name)
+    output_path = os.path.join(args.data_dir, str(args.year), args.output_name)
 
     print(f"\n{'=' * 60}")
     print(f"Cleaning SINASC Data: {args.year}")

@@ -73,8 +73,10 @@ Use the provided `Dockerfile` or `Dockerfile.python313` for containerized deploy
 ## Preparation
 
 ### Using Deployment Script
+The recommended way to prepare for deployment is to use the provided script. This will generate all necessary configuration files in the `deployment/` directory.
+
 ```bash
-python scripts/prepare_deploy.py
+python scripts/deployment/prepare_deployment.py
 ```
 
 This generates:
