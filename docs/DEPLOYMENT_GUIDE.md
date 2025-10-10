@@ -1,133 +1,116 @@
-# 🚀 SINASC Dashboard Deployment Guide
+# Deployment Guide: SINASC Dashboard on Render
 
-## Overview
+This guide provides step-by-step instructions for deploying the SINASC dashboard, which uses a PostgreSQL backend, to Render.com.
 
-Comprehensive deployment options for the SINASC Dashboard.
+## 1. Architecture on Render
 
-**Dashboard specs:**
-- Data: ~200MB (optimized Parquet files)
-- Memory: <200MB RAM estimated
-- Stack: Dash + Plotly + Pandas
+The deployed application will consist of two main components on Render:
 
----
+1.  **PostgreSQL Database**: A managed database instance that will serve as our cloud production database.
+2.  **Web Service**: The Python Dash application, which connects to the PostgreSQL database to fetch data and serve the dashboard.
 
-## Recommended Platforms (Ranked)
+The data will be populated into the Render database by running our local `promote.py` script configured to target the cloud instance.
 
-### 1. ⭐ Render.com (Recommended)
-
-**Pros:**
-- Free tier with 512MB RAM
-- Auto-deploys from GitHub via `render.yaml`
-- HTTPS included
-- Custom domains on free tier
-
-**Deployment:**
-1. Push code to GitHub
-2. Sign in to render.com with GitHub
-3. Click "New +" → "Web Service"
-4. Select repository
-5. Click "Create Web Service" (auto-detects `render.yaml`)
-
-**Cost**: FREE  
-**URL**: `https://your-app-name.onrender.com`
-
----
-
-### 2. Railway.app
-
-**Pros:**
-- $5/month initial credit
-- Simple GitHub integration
-- Automatic HTTPS
-
-**Cons:**
-- Requires credit card
-
-**Cost**: Free $5 credit, then ~$3-5/month
-
----
-
-### 3. Hugging Face Spaces
-
-**Pros:**
-- Completely free for public apps
-- Great for data science projects
-- No credit card required
-
-**Cons:**
-- Slower performance
-- Manual upload process
-
-**Cost**: FREE
-
----
-
-### 4. Docker (Self-hosted)
-
-Use the provided `Dockerfile` or `Dockerfile.python313` for containerized deployment on any platform supporting Docker.
-
----
-
-
-
-## Preparation
-
-### Using Deployment Script
-The recommended way to prepare for deployment is to use the provided script. This will generate all necessary configuration files in the `deployment/` directory.
-
-```bash
-python scripts/deployment/prepare_deployment.py
+```
+┌──────────────────────────────┐      ┌──────────────────────────────┐
+│      Local Machine           │      │         Render Cloud         │
+└──────────────┬───────────────┘      └──────────────┬───────────────┘
+               │                                     │
+┌──────────────▼──────────────┐      ┌──────────────▼──────────────┐
+│      promote.py              │      │      PostgreSQL Database     │
+│  (--target render)           ├─────►│ (Cloud Production DB)        │
+└──────────────────────────────┘      └──────────────▲──────────────┘
+                                                     │
+                                      ┌──────────────┴──────────────┐
+                                      │         Web Service          │
+                                      │ (Dash App running Gunicorn)  │
+                                      └──────────────────────────────┘
 ```
 
-This generates:
-- `render.yaml` - Render.com config
-- `Procfile` - Heroku-style platforms
-- `railway.json` - Railway.app config
-- `Dockerfile` - Container deployment
-- `runtime.txt` - Python version
+## 2. Step-by-Step Deployment
 
-### Test Locally
+### Step 1: Create the PostgreSQL Database on Render
+
+1.  Log in to your Render account.
+2.  From the dashboard, click **New +** > **PostgreSQL**.
+3.  Provide a unique **Name** for your database (e.g., `sinasc-prod-db`).
+4.  Select a **Region** close to you.
+5.  Click **Create Database**.
+6.  Once the database is created, go to its "Info" page and copy the **Internal Database URL**. You will need this for your local `.env` file and for the web service configuration.
+
+### Step 2: Update Your Local Environment
+
+1.  Open your local `.env` file.
+2.  Paste the copied **Internal Database URL** as the value for `PROD_RENDER_DATABASE_URL`.
+
+    ```env
+    # .env
+    STAGING_DATABASE_URL=postgresql://user:password@localhost:5433/sinasc_db_staging
+    PROD_LOCAL_DATABASE_URL=postgresql://user:password@localhost:5434/sinasc_db_prod_local
+    PROD_RENDER_DATABASE_URL=postgres://user:xxxxxxxx@dpg-xxxxxxxx.frankfurt-a.oregon-postgres.render.com/sinasc_prod_db
+    ```
+
+### Step 3: Promote Data to the Cloud Database
+
+Now, run the promotion script from your local machine, targeting the newly created Render database.
+
 ```bash
-cd dashboard
-gunicorn app:server --bind 0.0.0.0:8050 --workers 2
+# Ensure your local Docker databases are running if you need to rebuild from scratch
+# docker-compose up -d
+
+# Run the promotion script targeting the cloud 'render' environment
+python -m dashboard.data.promote --target render
 ```
 
-Visit: http://localhost:8050
+This script will connect to your staging database, read the clean `fact_*` and `dim_*` tables, and copy them to your Render PostgreSQL database. This may take a few minutes depending on your internet connection.
 
----
+### Step 4: Deploy the Web Service on Render
 
-## Security Checklist
+1.  Push your latest code, including the `render.yaml` file, to your GitHub repository.
+2.  On the Render dashboard, click **New +** > **Web Service**.
+3.  Select your GitHub repository.
+4.  Render will automatically detect and use the `render.yaml` file for configuration. You need to add the database connection string as an environment variable.
+5.  Go to the **Environment** tab for your new web service.
+6.  Click **Add Environment Group** and select the group associated with your Render PostgreSQL database. This will automatically link the `DATABASE_URL` variable.
+7.  Alternatively, click **Add Environment Variable** and create a variable with:
+    -   **Key**: `DATABASE_URL`
+    -   **Value**: Paste the **Internal Database URL** from your Render database.
+8.  Click **Create Web Service**.
 
-- [ ] No API keys in code
-- [ ] Environment variables for secrets
-- [ ] `.env` in `.gitignore`
-- [ ] HTTPS enabled (automatic on Render)
-- [ ] LGPD compliance for Brazilian data
+Render will now build and deploy your application. The `buildCommand` will install dependencies, and the `startCommand` will run the Gunicorn server.
 
----
+### Step 5: Verify the Deployment
 
-## Troubleshooting
+Once the deployment is live, visit your `onrender.com` URL. The dashboard should load and display data fetched from your Render PostgreSQL database.
 
-**Module not found:**
-```bash
-pip freeze > dashboard/requirements.txt
+Check the logs in the Render dashboard for any errors.
+
+## 3. `render.yaml` Configuration
+
+Your `render.yaml` file in the `deployment/` directory should look like this. It defines the build and start commands for the web service.
+
+```yaml
+# deployment/render.yaml
+services:
+  - type: web
+    name: sinasc-dashboard
+    env: python
+    plan: free # Or a paid plan for better performance
+    buildCommand: "uv sync"
+    startCommand: "gunicorn dashboard.app:server"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sinasc-prod-db # Must match the name of your Render DB
+          property: internalConnectionString
 ```
 
-**Memory errors:**
-- Reduce workers: change `--workers 2` to `--workers 1`
-- Check data loading in callbacks
+**Note**: The `fromDatabase` key is the recommended way to link your database, as it will automatically update if the connection string changes.
 
-**Slow startup:**
-- First request after sleep (free tier) takes ~10s
-- Subsequent requests are fast
+## 4. Security and Maintenance
 
----
-
-## Next Steps
-
-1. Run `python scripts/prepare_deploy.py`
-2. Push to GitHub
-3. Deploy to Render.com
-4. Test your live URL
-
-See [DEPLOY_README.md](DEPLOY_README.md) for quick start instructions.
+-   **Database Access**: By default, your Render database is only accessible from other Render services within your account. To connect from your local machine (for the `promote.py` script), you may need to add your local IP address to the "Access" list in the database settings.
+-   **Re-promoting Data**: If you update your ETL pipeline and need to refresh the production data, simply re-run the `promote.py --target render` command from your local machine.
+-   **Free Tier Limitations**: Render's free web service tier may "spin down" after a period of inactivity. The first request to a sleeping service may take 30-60 seconds to respond. The free database tier does not spin down.

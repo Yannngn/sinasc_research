@@ -578,12 +578,12 @@ def register_callbacks(app):
         df = data_loader.load_yearly_aggregates()
 
         # Calculate non-extreme preterm (preterm but not extreme)
-        df["moderate_preterm_count"] = df["preterm_birth_count"] - df["extreme_preterm_birth_count"]
+        df["moderate_preterm_count"] = df["preterm_count"] - df["extreme_preterm_count"]
 
         return create_stacked_bar_chart(
             df=df,
             x_col="year",
-            y_cols=["moderate_preterm_count", "extreme_preterm_birth_count"],
+            y_cols=["moderate_preterm_count", "extreme_preterm_count"],
             labels=[
                 "Prematuros Moderados (32-36 sem)",
                 "Prematuros Extremos (<32 sem)",
@@ -601,7 +601,7 @@ def register_callbacks(app):
         return create_multi_line_chart(
             df=df,
             x_col="year",
-            y_cols=["preterm_birth_pct", "extreme_preterm_birth_pct"],
+            y_cols=["preterm_pct", "extreme_preterm_pct"],
             labels=["Prematuros Total (<37 sem)", "Prematuros Extremos (<32 sem)"],
             colors=["warning", "danger"],
             x_title="Ano",

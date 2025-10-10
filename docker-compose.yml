@@ -1,0 +1,41 @@
+services:
+  staging-db:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: sinasc_staging_db
+    environment:
+      POSTGRES_USER: ${STAGING_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${STAGING_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${STAGING_POSTGRES_DB:-sinasc_staging_db}
+    ports:
+      - "${STAGING_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - staging_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+          cpus: 2
+  prod-local-db:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: sinasc_prod_local_db
+    environment:
+      POSTGRES_USER: ${PROD_LOCAL_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${PROD_LOCAL_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${PROD_LOCAL_POSTGRES_DB:-sinasc_prod_local_db}
+    ports:
+      - "${PROD_LOCAL_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - prod_local_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+          cpus: 2
+
+volumes:
+  staging_db_data:
+    driver: local
+  prod_local_db_data:
+    driver: local

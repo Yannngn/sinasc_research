@@ -22,7 +22,7 @@ def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
     adolescent_pregnancy_rate = summary.get("pregnancy", {}).get("adolescent_pregnancy_pct", 0)
     low_apgar5_rate = summary.get("health_indicators", {}).get("low_apgar5_pct", 0)
     cesarean_rate = summary.get("delivery_type", {}).get("cesarean_pct", 0)
-    preterm_rate = summary.get("pregnancy", {}).get("preterm_birth_pct", 0)
+    preterm_rate = summary.get("pregnancy", {}).get("preterm_pct", 0)
     hospital_rate = summary.get("location", {}).get("hospital_birth_pct", 0)
 
     return dbc.Card(

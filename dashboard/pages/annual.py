@@ -72,11 +72,11 @@ def create_year_summary(year: int):
         prev_low_weight = prev_summary.get("health_indicators", {}).get("low_birth_weight_pct", 0)
         low_weight_yoy = calculate_yoy_change(low_weight_rate, prev_low_weight)
 
-    preterm_rate = summary.get("pregnancy", {}).get("preterm_birth_pct", 0)
+    preterm_rate = summary.get("pregnancy", {}).get("preterm_pct", 0)
     formatted_preterm = f"{preterm_rate:.1f}%".replace(".", ",")
     preterm_yoy = None
     if prev_summary:
-        prev_preterm = prev_summary.get("pregnancy", {}).get("preterm_birth_pct", 0)
+        prev_preterm = prev_summary.get("pregnancy", {}).get("preterm_pct", 0)
         preterm_yoy = calculate_yoy_change(preterm_rate, prev_preterm)
 
     hospital_rate = summary.get("location", {}).get("hospital_birth_pct", 0)
@@ -778,12 +778,12 @@ def register_callbacks(app):
         monthly_data = data_loader.load_monthly_aggregates(year)
 
         # Calculate moderate preterm
-        monthly_data["moderate_preterm_count"] = monthly_data["preterm_birth_count"] - monthly_data["extreme_preterm_birth_count"]
+        monthly_data["moderate_preterm_count"] = monthly_data["preterm_count"] - monthly_data["extreme_preterm_count"]
 
         return create_stacked_bar_chart(
             df=monthly_data,
             x_col="month_label",
-            y_cols=["moderate_preterm_count", "extreme_preterm_birth_count"],
+            y_cols=["moderate_preterm_count", "extreme_preterm_count"],
             labels=[
                 "Prematuros Moderados (32-36 sem)",
                 "Prematuros Extremos (<32 sem)",
@@ -805,7 +805,7 @@ def register_callbacks(app):
         return create_multi_line_chart(
             df=monthly_data,
             x_col="month_label",
-            y_cols=["preterm_birth_pct", "extreme_preterm_birth_pct"],
+            y_cols=["preterm_pct", "extreme_preterm_pct"],
             labels=["Prematuros Total (<37 sem)", "Prematuros Extremos (<32 sem)"],
             colors=["warning", "danger"],
             x_title="Mês",
@@ -931,9 +931,10 @@ def register_callbacks(app):
         delivery_type = summary.get("delivery_type", {})
 
         # Create pie chart data
+        cesarean = delivery_type.get("cesarean_pct", 0)
         values = [
-            delivery_type.get("vaginal_pct", 0),
-            delivery_type.get("cesarean_pct", 0),
+            delivery_type.get("vaginal_pct", 100 - cesarean),
+            cesarean,
         ]
         labels = ["Vaginal", "Cesárea"]
         colors = [COLOR_PALETTE["primary"], COLOR_PALETTE["secondary"]]
@@ -979,7 +980,7 @@ def register_callbacks(app):
 
         # Build a clean DataFrame: expected structure is {code: {"label": str, "count": int}}
         rows = []
-        if isinstance(maternal_occupation, dict):
+        if isinstance(maternal_occupation, dict) and maternal_occupation:
             for code, info in maternal_occupation.items():
                 if isinstance(info, dict):
                     label = info.get("label", str(code))
@@ -996,9 +997,28 @@ def register_callbacks(app):
 
         occupation_counts = pd.DataFrame(rows)
 
+        # If no occupation data available, return empty chart with message
+        if occupation_counts.empty:
+            fig = go.Figure()
+            fig.add_annotation(
+                text="Dados de ocupação materna<br>não disponíveis nos agregados",
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+                font=dict(size=14, color="#666"),
+            )
+            fig.update_layout(
+                xaxis=dict(visible=False),
+                yaxis=dict(visible=False),
+                height=CHART_HEIGHT,
+                margin=dict(l=10, r=10, t=30, b=10),
+            )
+            return fig
+
         # Remove zero counts (they clutter the pie) and sort by count desc
-        if not occupation_counts.empty:
-            occupation_counts = occupation_counts[occupation_counts["count"] > 0].sort_values("count", ascending=False)
+        occupation_counts = occupation_counts[occupation_counts["count"] > 0].sort_values("count", ascending=False)
 
         # Prepare colors (cycle pastel palette if necessary)
         palette = px.colors.qualitative.Pastel

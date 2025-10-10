@@ -201,8 +201,8 @@ These variables are calculated monthly and include both percentages and absolute
 - `hospital_birth_pct`
 
 **Absolute Counts:**
-- `preterm_birth_count`
-- `extreme_preterm_birth_count`
+- `preterm_count`
+- `extreme_preterm_count`
 - `adolescent_pregnancy_count`
 - `very_young_pregnancy_count`
 - `low_birth_weight_count`

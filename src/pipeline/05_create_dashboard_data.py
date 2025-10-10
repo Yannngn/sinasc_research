@@ -171,7 +171,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["preterm_birth_pct"] = preterm_rate
-        monthly["preterm_birth_count"] = (monthly["total_births"] * monthly["preterm_birth_pct"] / 100).round().astype(int)
+        monthly["preterm_count"] = (monthly["total_births"] * monthly["preterm_birth_pct"] / 100).round().astype(int)
 
         # Add extreme preterm births (GESTACAO < 3 means < 32 weeks)
         extreme_preterm_rate = df.groupby("year_month").apply(
@@ -179,7 +179,7 @@ def create_monthly_aggregates(df: pd.DataFrame, year: int, output_dir: str) -> s
             include_groups=False,  # type: ignore
         )  # type: ignore
         monthly["extreme_preterm_birth_pct"] = extreme_preterm_rate
-        monthly["extreme_preterm_birth_count"] = (monthly["total_births"] * monthly["extreme_preterm_birth_pct"] / 100).round().astype(int)
+        monthly["extreme_preterm_count"] = (monthly["total_births"] * monthly["extreme_preterm_birth_pct"] / 100).round().astype(int)
 
     # Add adolescent pregnancies (IDADEMAE < 20)
     if "IDADEMAE" in df.columns:
@@ -559,12 +559,12 @@ def create_yearly_aggregates(output_dir: str) -> str:
         # Add preterm births if available
         if "preterm_birth_pct" in df_monthly.columns:
             yearly_row["preterm_birth_pct"] = df_monthly["preterm_birth_pct"].mean()
-            yearly_row["preterm_birth_count"] = (yearly_row["total_births"] * yearly_row["preterm_birth_pct"] / 100).round().astype(int)
+            yearly_row["preterm_count"] = (yearly_row["total_births"] * yearly_row["preterm_birth_pct"] / 100).round().astype(int)
 
         # Add extreme preterm births if available
         if "extreme_preterm_birth_pct" in df_monthly.columns:
             yearly_row["extreme_preterm_birth_pct"] = df_monthly["extreme_preterm_birth_pct"].mean()
-            yearly_row["extreme_preterm_birth_count"] = (
+            yearly_row["extreme_preterm_count"] = (
                 (yearly_row["total_births"] * yearly_row["extreme_preterm_birth_pct"] / 100).round().astype(int)
             )
 

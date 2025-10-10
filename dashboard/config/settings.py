@@ -10,7 +10,6 @@ BASE_DIR = Path(__file__).parent.parent  # dashboard/
 DATA_DIR = BASE_DIR.parent / "dashboard_data"  # sinasc_research/dashboard_data/
 
 # Data paths
-METADATA_PATH = DATA_DIR / "metadata.json"
 AGGREGATES_DIR = DATA_DIR / "aggregates"
 YEARS_DIR = DATA_DIR / "years"
 

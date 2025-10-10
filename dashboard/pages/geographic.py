@@ -13,27 +13,26 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from components.charts import format_brazilian_number
-from config.constants import BRAZILIAN_STATES
 from config.settings import CHART_CONFIG, CHART_HEIGHT
 from dash import Input, Output, callback, dcc, html
 from data.loader import data_loader
 
 
 # Geographic utility functions
-def get_region_from_state_code(state_code: str) -> str:
+def get_region_from_id_code(id_code: str) -> str:
     """
     Get geographic region from state code.
 
     Args:
-        state_code: Two-digit state code (e.g., "11", "35")
+        id_code: One-digit, two-digit, six or seven-digit code (e.g., "1", "11", "1100015", "3550308")
 
     Returns:
         Region name (Norte, Nordeste, Sudeste, Sul, Centro-Oeste)
     """
-    if not state_code or len(str(state_code)) < 1:
+    if not id_code or len(str(id_code)) < 1:
         return "Desconhecido"
 
-    first_digit = str(state_code)[0]
+    first_digit = str(id_code)[0]
     regions = {
         "1": "Norte",
         "2": "Nordeste",
@@ -42,6 +41,55 @@ def get_region_from_state_code(state_code: str) -> str:
         "5": "Centro-Oeste",
     }
     return regions.get(first_digit, "Desconhecido")
+
+
+def get_state_from_id_code(id_code: str) -> str:
+    """
+    Get geographic state from state code.
+
+    Args:
+        id_code: Two-digit, six or seven-digit code (e.g., "11", "1100015", "3550308")
+
+    Returns:
+        Region name (Norte, Nordeste, Sudeste, Sul, Centro-Oeste)
+    """
+    if not id_code or len(str(id_code)) < 2:
+        return "Desconhecido"
+
+    first_digits = str(id_code)[:1]
+    # Normalize to two-digit IBGE state code (e.g., 11, 35)
+    code = str(id_code).zfill(2)
+    first_digits = code[:2]
+
+    states = data_loader._load_state_mapping()
+    return states.get(first_digits, "Desconhecido")
+
+
+def get_municipality_from_id_code(id_code: str) -> str:
+    """
+    Get geographic municipality name from municipality IBGE code.
+
+    Args:
+        id_code: Six or seven-digit code (e.g., "1100015", "3550308", or numeric)
+
+    Returns:
+        Municipality name or "Desconhecido" if not found
+    """
+    if not id_code:
+        return "Desconhecido"
+
+    code_str = str(id_code).strip()
+
+    # Require at least 6 digits to attempt lookup (keep original behavior)
+    if len(code_str) < 6:
+        return "Desconhecido"
+
+    # Normalize to 6-digit IBGE municipality code (take last 6 digits if longer)
+    first_digits = str(id_code)[:6]
+    code_norm = first_digits.zfill(6)
+
+    mapping = data_loader._load_municipality_mapping()
+    return mapping.get(code_norm, "Desconhecido")
 
 
 def format_indicator_value(value: float, indicator: str) -> str:
@@ -60,11 +108,11 @@ def format_indicator_value(value: float, indicator: str) -> str:
 
     if "_pct" in indicator or "rate" in indicator.lower():
         return f"{value:.1f}%".replace(".", ",")
-    elif "PESO" in indicator or "weight" in indicator.lower():
+    elif "peso" in indicator.lower() or "weight" in indicator.lower():
         return f"{value:.0f}g"
-    elif "IDADE" in indicator or "age" in indicator.lower():
+    elif "idade" in indicator.lower() or "age" in indicator.lower():
         return f"{value:.1f} anos".replace(".", ",")
-    elif "APGAR" in indicator:
+    elif "apgar" in indicator.lower():
         return f"{value:.1f}".replace(".", ",")
     else:
         return format_brazilian_number(value)
@@ -84,15 +132,15 @@ def create_layout() -> html.Div:
     # Indicator options with descriptive labels
     indicator_options = [
         {"label": "Taxa de Cesárea (%)", "value": "cesarean_pct"},
-        {"label": "Taxa de Prematuridade (%)", "value": "preterm_birth_pct"},
-        {"label": "Taxa de Prematuridade Extrema (%)", "value": "extreme_preterm_birth_pct"},
+        {"label": "Taxa de Prematuridade (%)", "value": "preterm_pct"},
+        {"label": "Taxa de Prematuridade Extrema (%)", "value": "extreme_preterm_pct"},
         {"label": "Taxa de Gravidez na Adolescência (%)", "value": "adolescent_pregnancy_pct"},
         {"label": "Taxa de Baixo Peso ao Nascer (%)", "value": "low_birth_weight_pct"},
         {"label": "Taxa de APGAR5 Baixo (%)", "value": "low_apgar5_pct"},
         {"label": "Taxa de Nascimentos Hospitalares (%)", "value": "hospital_birth_pct"},
-        {"label": "Peso Médio ao Nascer (g)", "value": "PESO_mean"},
-        {"label": "Idade Materna Média (anos)", "value": "IDADEMAE_mean"},
-        {"label": "APGAR5 Médio", "value": "APGAR5_mean"},
+        {"label": "Peso Médio ao Nascer (g)", "value": "peso_mean"},
+        {"label": "Idade Materna Média (anos)", "value": "idademae_mean"},
+        {"label": "APGAR5 Médio", "value": "apgar5_mean"},
     ]
 
     return html.Div(
@@ -150,6 +198,7 @@ def create_layout() -> html.Div:
                 ],
                 className="mb-4",
             ),
+            # Removed developer-only UF exclusion control after geometry fix
             # Summary cards
             dbc.Row(
                 [
@@ -209,6 +258,28 @@ def create_layout() -> html.Div:
                         md=3,
                         className="mb-3",
                     ),
+                ],
+                className="mb-4",
+            ),
+            # Choropleth Map
+            dbc.Row(
+                [
+                    dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader(html.H5("🇧🇷 Mapa de Indicadores por Estado", className="mb-0"), className="bg-light"),
+                                dbc.CardBody(
+                                    dcc.Graph(
+                                        id="geo-choropleth-map",
+                                        config=CHART_CONFIG,  # type:ignore
+                                        style={"height": f"{int(CHART_HEIGHT * 2)}px"},
+                                    )
+                                ),
+                            ],
+                            className="shadow-sm",
+                        ),
+                        width=12,
+                    )
                 ],
                 className="mb-4",
             ),
@@ -320,23 +391,27 @@ def register_callbacks(app):
     )
     def update_summary_cards(year: int, indicator: str):
         """Update summary statistics cards."""
-        df = data_loader.load_state_aggregates(year)
+        # Data will be fetched from the new agg_state_yearly table
+        df = data_loader.load_yearly_state_aggregates(year)
 
-        if indicator not in df.columns:
+        if df.empty or indicator not in df.columns:
             return "N/A", "N/A", "N/A", "N/A"
 
+        df["state_code"] = df["state_code"].astype(str).str.zfill(2)
+        df["state_name"] = df["state_code"].map(get_state_from_id_code)
+        df["region_name"] = df["state_code"].map(get_region_from_id_code)
+
         values = df[indicator].dropna()
+        if values.empty:
+            return "N/A", "N/A", "N/A", "N/A"
 
         max_val = values.max()
         min_val = values.min()
         mean_val = values.mean()
         std_val = values.std()
 
-        max_state = df.loc[df[indicator] == max_val, "state_code"].iloc[0]  # type: ignore
-        min_state = df.loc[df[indicator] == min_val, "state_code"].iloc[0]  # type: ignore
-
-        max_state_name = BRAZILIAN_STATES.get(max_state, {"name": str(max_state)})["name"]
-        min_state_name = BRAZILIAN_STATES.get(min_state, {"name": str(min_state)})["name"]
+        max_state_name = df.loc[df[indicator] == max_val, "state_name"].iloc[0]  # type:ignore
+        min_state_name = df.loc[df[indicator] == min_val, "state_name"].iloc[0]  # type:ignore
 
         return (
             html.Div(
@@ -361,21 +436,24 @@ def register_callbacks(app):
     )
     def update_top_states_table(year: int, indicator: str):
         """Update top 10 states table."""
-        df = data_loader.load_state_aggregates(year)
+        df = data_loader.load_yearly_state_aggregates(year)
 
-        if indicator not in df.columns:
+        if df.empty or indicator not in df.columns:
             return html.P("Indicador não disponível", className="text-muted text-center")
+
+        df["state_code"] = df["state_code"].astype(str).str.zfill(2)
+        df["state_name"] = df["state_code"].map(get_state_from_id_code)
+        df["region_name"] = df["state_code"].map(get_region_from_id_code)
 
         # Sort by indicator (descending) and get top 10
         top_states = df.nlargest(10, indicator)
 
         # Create table rows
         rows = []
-        for idx, row in top_states.iterrows():
-            state_code = row["state_code"]
-            state_name = BRAZILIAN_STATES.get(state_code, {"name": str(state_code)})["name"]
+        for _, row in top_states.iterrows():
+            state_name = row["state_name"]
             value = row[indicator]
-            births = row.get("CODMUNNASC_count", 0)
+            births = row.get("total_births", 0)
 
             rows.append(
                 html.Tr(
@@ -411,9 +489,9 @@ def register_callbacks(app):
     )
     def update_regional_comparison(year: int, indicator: str):
         """Update regional comparison chart."""
-        df = data_loader.load_state_aggregates(year)
+        df = data_loader.load_yearly_state_aggregates(year)
 
-        if indicator not in df.columns:
+        if df.empty or indicator not in df.columns:
             return go.Figure().add_annotation(
                 text="Indicador não disponível",
                 xref="paper",
@@ -421,38 +499,38 @@ def register_callbacks(app):
                 showarrow=False,
             )
 
-        # Add region column
-        df["region"] = df["state_code"].apply(get_region_from_state_code)
+        df["state_code"] = df["state_code"].astype(str).str.zfill(2)
+        df["state_name"] = df["state_code"].map(get_state_from_id_code)
+        df["region_name"] = df["state_code"].map(get_region_from_id_code)
 
         # Aggregate by region (weighted average by births)
         regional_data = []
-        for region in ["Norte", "Nordeste", "Sudeste", "Sul", "Centro-Oeste"]:
-            region_df = df[df["region"] == region]
-            if len(region_df) > 0:
+        for region_name, group in df.groupby("region_name"):
+            if not group.empty:
                 # Weighted average
-                weights = region_df["CODMUNNASC_count"]
-                weighted_value = (region_df[indicator] * weights).sum() / weights.sum()
+                weights = group["total_births"]
+                weighted_value = (group[indicator] * weights).sum() / weights.sum()
                 total_births = weights.sum()
 
-                regional_data.append({"region": region, indicator: weighted_value, "total_births": total_births})
+                regional_data.append({"region_name": region_name, indicator: weighted_value, "total_births": total_births})
 
         regional_df = pd.DataFrame(regional_data)
+
+        # Add a formatted text column for the bar labels to ensure correct display
+        regional_df["formatted_indicator"] = regional_df[indicator].apply(lambda val: format_indicator_value(val, indicator))
 
         # Create bar chart
         fig = px.bar(
             regional_df,
-            x="region",
+            x="region_name",
             y=indicator,
-            text=indicator,
-            color="region",
+            text="formatted_indicator",
+            color="region_name",
             color_discrete_sequence=px.colors.qualitative.Set2,
         )
 
-        # Format text on bars
-        fig.update_traces(
-            texttemplate=[format_indicator_value(v, indicator) for v in regional_df[indicator]],
-            textposition="outside",
-        )
+        # Position the text labels outside the bars
+        fig.update_traces(textposition="outside")
 
         fig.update_layout(
             template="plotly_white",
@@ -466,14 +544,134 @@ def register_callbacks(app):
         return fig
 
     @callback(
+        Output("geo-choropleth-map", "figure"),
+        [Input("geo-year-dropdown", "value"), Input("geo-indicator-dropdown", "value")],
+    )
+    def update_choropleth_map(year: int, indicator: str):
+        """Update the choropleth map of Brazil."""
+        import plotly.express as px  # Local import to avoid circulars on Dash reload
+
+        # Load data and geojson
+        df = data_loader.load_yearly_state_aggregates(year)
+        geojson = data_loader._load_brazil_states_geojson()
+
+        # Guard: missing data or indicator
+        if df.empty or indicator not in df.columns:
+            return {
+                "data": [],
+                "layout": {
+                    "xaxis": {"visible": False},
+                    "yaxis": {"visible": False},
+                    "annotations": [
+                        {
+                            "text": "Sem dados para o ano/indicador selecionado",
+                            "showarrow": False,
+                            "xref": "paper",
+                            "yref": "paper",
+                            "x": 0.5,
+                            "y": 0.5,
+                        }
+                    ],
+                },
+            }
+
+        # Guard: geojson failed to load
+        if not isinstance(geojson, dict) or not geojson.get("features"):
+            return {
+                "data": [],
+                "layout": {
+                    "xaxis": {"visible": False},
+                    "yaxis": {"visible": False},
+                    "annotations": [
+                        {
+                            "text": "Falha ao carregar o mapa do Brasil (GeoJSON)",
+                            "showarrow": False,
+                            "xref": "paper",
+                            "yref": "paper",
+                            "x": 0.5,
+                            "y": 0.5,
+                        }
+                    ],
+                },
+            }
+
+        # Ensure state codes are strings with two digits to match GeoJSON properties.id
+        df = df.copy()
+        if "state_code" in df.columns:
+            df["state_code"] = df["state_code"].astype(str).str.zfill(2)
+
+        # Ensure state_name for nicer hover
+        if "state_name" not in df.columns:
+            df["state_name"] = df["state_code"].apply(get_state_from_id_code)
+
+        if "state_code" not in df.columns:
+            return {
+                "data": [],
+                "layout": {
+                    "xaxis": {"visible": False},
+                    "yaxis": {"visible": False},
+                    "annotations": [
+                        {
+                            "text": "Coluna state_code ausente nos dados",
+                            "showarrow": False,
+                            "xref": "paper",
+                            "yref": "paper",
+                            "x": 0.5,
+                            "y": 0.5,
+                        }
+                    ],
+                },
+            }
+
+        # Build figure
+        is_percent = ("_pct" in indicator) or ("rate" in indicator.lower())
+        color_continuous_scale = "YlOrRd" if is_percent else "Blues"
+
+        fig = px.choropleth(
+            df,
+            geojson=geojson,
+            locations="state_code",
+            featureidkey="properties.id",  # our GeoJSON has state code under properties.id
+            color=indicator,
+            color_continuous_scale=color_continuous_scale,
+            hover_name="state_name" if "state_name" in df.columns else None,
+            hover_data={
+                "state_code": True,
+                indicator: ":.1f" if is_percent else True,
+                "total_births": ":," if "total_births" in df.columns else False,
+            },
+        )
+
+        # Improve geos rendering and zoom to Brazil bounds
+        fig.update_geos(
+            fitbounds="locations",
+            visible=False,
+            projection_type="mercator",
+            center=dict(lat=-14.2350, lon=-51.9253),
+        )
+
+        # Title and legend formatting
+        fig.update_layout(
+            template="plotly_white",
+            margin=dict(l=10, r=10, t=20, b=10),
+            coloraxis_colorbar=dict(
+                title="%" if is_percent else "",
+                ticksuffix="%" if is_percent else "",
+            ),
+            font=dict(family="Inter, sans-serif"),
+        )
+
+        return fig
+
+    @callback(
         Output("geo-state-ranking-chart", "figure"),
         [Input("geo-year-dropdown", "value"), Input("geo-indicator-dropdown", "value")],
     )
     def update_state_ranking_chart(year: int, indicator: str):
         """Update state ranking horizontal bar chart."""
-        df = data_loader.load_state_aggregates(year)
+        df = data_loader.load_yearly_state_aggregates(year)
 
-        if indicator not in df.columns:
+        if df.empty or indicator not in df.columns:
             return go.Figure().add_annotation(
                 text="Indicador não disponível",
                 xref="paper",
@@ -481,14 +679,11 @@ def register_callbacks(app):
                 showarrow=False,
             )
 
-        # Sort by indicator
+        df["state_code"] = df["state_code"].astype(str).str.zfill(2)
+        df["state_name"] = df["state_code"].map(get_state_from_id_code)
+        df["region_name"] = df["state_code"].map(get_region_from_id_code)
+
         df_sorted = df.sort_values(indicator, ascending=True)
-
-        # Map state codes to names
-        df_sorted["state_name"] = df_sorted["state_code"].map(BRAZILIAN_STATES)
-
-        # Add region for coloring
-        df_sorted["region"] = df_sorted["state_code"].apply(get_region_from_state_code)
 
         # Create horizontal bar chart
         fig = px.bar(
@@ -496,9 +691,9 @@ def register_callbacks(app):
             y="state_name",
             x=indicator,
             orientation="h",
-            color="region",
+            color="region_name",
             color_discrete_sequence=px.colors.qualitative.Set2,
-            hover_data={"CODMUNNASC_count": ":,"},
+            hover_data={"total_births": ":,"},
         )
 
         fig.update_layout(

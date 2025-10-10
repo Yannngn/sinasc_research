@@ -118,9 +118,9 @@ Given the large dataset size, we implement several optimization strategies:
 - **Monthly Granularity**: monthly_{year}.parquet for temporal analysis
 - **State-Level**: state_{year}.parquet for geographic analysis
 - **New Metrics**: 
-  - `extreme_preterm_birth_pct` (GESTACAO < 3, <32 weeks): 0.55-0.61%
+  - `extreme_preterm_pct` (GESTACAO < 3, <32 weeks): 0.55-0.61%
   - `very_young_pregnancy_pct` (IDADEMAE < 13): 0.019-0.028%
-  - `preterm_birth_count` and `extreme_preterm_birth_count`
+  - `preterm_count` and `extreme_preterm_count`
   - `adolescent_pregnancy_count` and `very_young_pregnancy_count`
 
 ---

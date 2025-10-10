@@ -1,172 +1,119 @@
-# SINASC Dashboard - Quick Start Guide
+# Quick Start Guide: SINASC Dashboard
 
-## Overview
-Interactive web dashboard for analyzing Brazilian perinatal health data (SINASC - Sistema de Informações sobre Nascidos Vivos).
+This guide provides detailed instructions for setting up and running the SINASC dashboard and its associated data pipeline on a local machine.
 
-## Features
-- 📊 **Overview Dashboard**: Key metrics and monthly timeline
-- 📈 **Temporal Analysis**: Time-based trends (in development)
-- 🗺️ **Geographic Analysis**: State and municipality maps (in development)
-- 🔍 **Detailed Insights**: Deep-dive visualizations (in development)
+## 1. Architecture Overview
 
-## Requirements
-- Python 3.13+
-- Dependencies listed in `pyproject.toml` (parent directory)
+The project uses a three-tiered database architecture, managed locally with Docker:
 
-## Installation
+1.  **Staging Database (`sinasc_db_staging`)**: A PostgreSQL database running in a Docker container. It's used for ingesting and processing raw data from public sources.
+2.  **Local Production Database (`sinasc_db_prod_local`)**: A second PostgreSQL database in Docker that mirrors the structure of the cloud production database. It holds the clean, aggregated data ready to be served to the dashboard.
+3.  **Cloud Production Database**: A managed PostgreSQL instance on a cloud provider (e.g., Render) for the deployed application.
 
-### Using UV (Recommended)
+This setup allows for safe data processing in a staging environment without affecting the production data that the dashboard consumes.
+
+## 2. Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+-   **Docker**: To run the PostgreSQL database containers.
+-   **Docker Compose**: To manage the multi-container Docker application.
+-   **Python**: Version 3.12 or higher.
+-   **UV**: The recommended Python package manager for this project.
+
+## 3. Local Setup and Installation
+
+Follow these steps to get the project running locally.
+
+### Step 1: Clone the Repository
+
 ```bash
-# From project root
+git clone https://github.com/Yannngn/sinasc_research.git
 cd sinasc_research
+```
+
+### Step 2: Configure Environment Variables
+
+The project uses a `.env` file to manage database connection strings and other settings.
+
+1.  **Create the `.env` file:**
+    Copy the example file to create your local configuration.
+    ```bash
+    cp .env.example .env
+    ```
+
+2.  **Review the variables:**
+    The default values in `.env` are pre-configured for the local Docker setup. You don't need to change anything to run the project locally.
+
+    -   `STAGING_DATABASE_URL`: Connects to the staging database in Docker.
+    -   `PROD_LOCAL_DATABASE_URL`: Connects to the local production database in Docker.
+    -   `PROD_RENDER_DATABASE_URL`: Placeholder for your cloud database URL (used for deployment).
+
+### Step 3: Install Python Dependencies
+
+Use `uv` to install all required Python packages from `pyproject.toml`.
+
+```bash
 uv sync
 ```
 
-### Using pip
+### Step 4: Launch the Databases
+
+Start the staging and local production PostgreSQL databases using Docker Compose. The `-d` flag runs the containers in detached mode.
+
 ```bash
-# From dashboard directory
-cd dashboard
-pip install -r requirements.txt
+docker-compose up -d
 ```
 
-## Running the Dashboard
+-   The first time you run this, Docker will download the `postgis/postgis` image.
+-   An initialization script will automatically enable the PostGIS extension in both databases.
+-   Your databases will be running on:
+    -   Staging: `localhost:5433`
+    -   Local Production: `localhost:5434`
 
-### Development Mode
+## 4. Running the Data Pipeline
+
+The data pipeline is a series of Python scripts that perform the full ETL process. A single command runs all the necessary steps in sequence.
+
+**Run the entire pipeline:**
+
 ```bash
-# From project root
-cd dashboard
-python app.py
-
-# Or with UV
-uv run python app.py
+python -m dashboard.data.run_all
 ```
 
-The dashboard will be available at: **http://localhost:8050**
+This command executes the following steps:
+1.  **Staging (`staging.py`)**: Downloads raw data for SINASC, IBGE (population), and CNES (health facilities) and ingests it into the `sinasc_db_staging` database.
+2.  **Optimization (`optimize.py`)**: Optimizes the data types of the tables in the staging database to reduce storage and improve query performance (e.g., converts `TEXT` to `INTEGER` or `DATE`).
+3.  **Dimensions (`dimensions.py`)**: Creates and populates dimension tables (e.g., `dim_parto`, `dim_escmae`) that store human-readable labels for categorical data.
+4.  **Promotion (`promote.py`)**: Copies the clean, optimized tables (`fact_*`, `dim_*`) from the staging database to the `sinasc_db_prod_local` database.
 
-### Production Mode
+## 5. Running the Dashboard
+
+Once the pipeline has successfully populated the local production database, you can launch the web application.
+
 ```bash
-gunicorn app:server -b 0.0.0.0:8050
+python -m dashboard.app
 ```
 
-## Project Structure
-```
-sinasc_research/
-├── dashboard/                # Dashboard application
-│   ├── app.py               # Main application entry point
-│   ├── config/              # Configuration files
-│   │   ├── __init__.py
-│   │   ├── settings.py     # App settings and colors
-│   │   └── constants.py    # Brazilian states, labels
-│   ├── data/                # Data loading
-│   │   ├── __init__.py
-│   │   └── loader.py       # DataLoader with caching
-│   ├── pages/               # Dashboard pages
-│   │   ├── __init__.py
-│   │   └── home.py         # Home page with metrics
-│   └── requirements.txt     # Python dependencies
-└── dashboard_data/          # Optimized data files
-    ├── metadata.json
-    ├── aggregates/
-    │   ├── monthly_2024.parquet
-    │   ├── state_2024.parquet
-    │   └── municipality_2024.parquet
-    └── years/
-        └── 2024_essential.parquet
-```
+The dashboard will connect to your `sinasc_db_prod_local` database.
 
-## Data Files
-The dashboard uses pre-optimized data files located in `sinasc_research/dashboard_data/`:
+Navigate to **http://localhost:8050** in your web browser to see the application.
 
-### Aggregated Data (5 Years: 2019-2024)
-- **yearly.parquet**: 12.5KB, 5 rows, 23 columns
-  - Includes: total_births, preterm_birth_pct, extreme_preterm_birth_pct, adolescent_pregnancy_pct, very_young_pregnancy_pct, cesarean_pct, PESO_mean, IDADEMAE_mean, APGAR5_mean, hospital_birth_pct, etc.
-- **Monthly aggregates**: monthly_{year}.parquet (10KB each, 12 months per year)
-- **State aggregates**: state_{year}.parquet (11KB each, 27 states)
-- **Municipality aggregates**: municipality_{year}.parquet (30KB each, top 500)
+## 6. Development Workflow Summary
 
-### Essential Data
-- **2019_essential.parquet**: ~32MB, 2.73M records
-- **2020_essential.parquet**: ~32MB, 2.68M records
-- **2021_essential.parquet**: ~32MB, 2.68M records
-- **2022_essential.parquet**: ~30MB, 2.56M records
-- **2023_essential.parquet**: ~30MB, 2.54M records
-- **2024_essential.parquet**: ~30MB, 2.26M records
-- **Total**: 10,036,633 records across 5 years
+Your typical development workflow will be:
 
-### Metadata
-- **metadata.json**: 2KB with dataset information
+1.  **Start services**: `docker-compose up -d`
+2.  **Process data**: `python -m dashboard.data.run_all` (only needs to be run once, or again if raw data changes)
+3.  **Run the app**: `python -m dashboard.app`
+4.  **Code**: Make changes to the dashboard pages, components, or data loader. The web app will hot-reload.
 
-To regenerate these files:
+## 7. Stopping the Environment
+
+To stop the Docker database containers, run:
+
 ```bash
-# From project root
-cd sinasc_research
-
-# Generate for all years
-python scripts/create_dashboard_data.py --year 2019
-python scripts/create_dashboard_data.py --year 2020
-python scripts/create_dashboard_data.py --year 2021
-python scripts/create_dashboard_data.py --year 2022
-python scripts/create_dashboard_data.py --year 2023
-python scripts/create_dashboard_data.py --year 2024
+docker-compose down
 ```
 
-## Environment Variables
-Create a `.env` file in the dashboard directory:
-```
-DEBUG=True
-HOST=0.0.0.0
-PORT=8050
-```
-
-## Current Status
-✅ **Completed**:
-- Base application structure with routing
-- Configuration management (settings, constants, centralized layout configs)
-- Brazilian number formatting (dots for thousands, commas for decimals)
-- Data loading with LRU caching (5 years: 2019-2024)
-- Home page with enhanced features:
-  - **Year Summary Cards** (last 3 years):
-    - Total births with Brazilian formatting
-    - 6 metrics in compact 2-column inline layout
-    - Maternal age, birth weight, APGAR 5, cesarean rate, preterm rate, hospital rate
-  - **Birth Evolution**: Bar chart with formatted text labels
-  - **Cesarean Comparison**: Grouped bar chart
-  - **Preterm Births Analysis**: 
-    - Stacked bar chart (moderate + extreme <32 weeks)
-    - Dual-line chart with WHO reference
-  - **Adolescent Pregnancy Analysis**:
-    - Stacked bar chart (older teens + very young <15 years)
-    - Dual-line chart showing trends
-  - All charts with optimized layouts (no redundant titles)
-- Annual analysis page with monthly details
-
-🔄 **Planned**:
-- Temporal analysis page with date range filters and time-series trends
-- Geographic analysis page with choropleth maps by state/municipality
-- Insights page with correlations and statistical analysis
-- Enhanced cross-page filtering and state management
-
-## Performance
-- **Memory usage**: <200MB (target: <512MB for free hosting)
-- **Load time**: <3 seconds for initial page
-- **Chart updates**: <1 second with caching
-
-## Technology Stack
-- **Framework**: Plotly Dash 3.2+
-- **UI**: Dash Bootstrap Components 2.0+
-- **Data**: Pandas 2.3+, PyArrow 21.0+
-- **Visualization**: Plotly 6.3+
-- **Deployment**: Gunicorn 21.2+
-
-## Deployment
-Ready for deployment on:
-- Render.com (free tier)
-- Hugging Face Spaces
-- Heroku
-- Any platform supporting Python WSGI apps
-
-## License
-MIT
-
-## Author
-Yannngn
+This will stop the containers but preserve the data in the Docker volumes, so you won't have to re-run the pipeline every time you restart them. To delete the data as well, use `docker-compose down -v`.

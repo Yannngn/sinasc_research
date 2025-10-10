@@ -1,0 +1,43 @@
+{
+    // Exclude virtual environment folders from file explorer
+    "files.exclude": {
+        "**/venv/**": true,
+        "**/.venv/**": true,
+        "**/env/**": true,
+        "**/__pycache__/**": true,
+        "**/*.pyc": true
+    },
+    // Exclude from search
+    "search.exclude": {
+        "**/venv/**": true,
+        "**/.venv/**": true,
+        "**/env/**": true,
+        "**/__pycache__/**": true,
+        "**/*.pyc": true
+    },
+    // Exclude from Python linting
+    "python.linting.ignorePatterns": [
+        "**/venv/**",
+        "**/.venv/**",
+        "**/env/**",
+        "**/__pycache__/**",
+        "**/*.pyc"
+    ],
+    // Exclude from Python analysis (error finding)
+    "python.analysis.exclude": [
+        "**/venv/**",
+        "**/.venv/**",
+        "**/env/**",
+        "**/__pycache__/**"
+    ],
+    // Exclude from formatting if using Black or other formatters
+    "python.formatting.blackArgs": [
+        "--exclude=venv/|.venv/|env/"
+    ],
+    // Additional settings for a clean workspace
+    "python.defaultInterpreterPath": "./venv/bin/python",  // Adjust if needed
+    "editor.formatOnSave": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true
+}

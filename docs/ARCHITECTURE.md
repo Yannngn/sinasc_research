@@ -1,557 +1,156 @@
-# SINASC Dashboard - Technical Architecture
+# Technical Architecture: SINASC Dashboard
 
-## System Overview
+## 1. System Overview
 
-The SINASC Dashboard is a data-intensive web application for analyzing Brazilian birth records. This document details the technical architecture, data flow, and implementation decisions.
+The SINASC Dashboard has evolved from a file-based system to a robust, database-driven web application. This architecture is designed for scalability, maintainability, and efficient data processing, supporting both local development and cloud deployment.
 
----
-
-## Architecture Diagram
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        User Browser                         │
-│  ┌────────────┐  ┌─────────────┐  ┌──────────────────┐      │
-│  │  Filters   │  │   Charts    │  │      Maps        │      │
-│  └────────────┘  └─────────────┘  └──────────────────┘      │
-└───────────────────────┬─────────────────────────────────────┘
-                        │ HTTP/WebSocket
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Dash Application Server                  │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Callback Engine (Python)                │   │
-│  │  • Input validation                                  │   │
-│  │  • State management                                  │   │
-│  │  • Event handling                                    │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                        │                                    │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │            Data Processing Layer                     │   │
-│  │  • Filtering    • Aggregation    • Transformation    │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                        │                                    │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │               Caching Layer                          │   │
-│  │  • In-memory cache (LRU)                             │   │
-│  │  • Pre-computed aggregates                           │   │
-│  └──────────────────────────────────────────────────────┘   │
-└────────────────────────┬────────────────────────────────────┘
-                         │ File I/O
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Data Storage Layer                        │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐     │
-│  │   Raw Data  │  │  Aggregated  │  │  Geo Reference  │     │
-│  │   (Parquet) │  │    (Parquet) │  │     (GeoJSON)   │     │
-│  └─────────────┘  └──────────────┘  └─────────────────┘     │
-└─────────────────────────────────────────────────────────────┘
-```
+The core of the system is a three-tiered database environment coupled with a Python-based ETL (Extract, Transform, Load) pipeline.
 
 ---
 
-## Data Flow
+## 2. Architecture Diagram
 
-### 1. **Initial Load**
 ```
-User opens dashboard
-    → App loads configuration
-    → Load pre-aggregated metadata (years, states, counts)
-    → Render initial UI with default filters
-    → Display cached/default visualizations
-```
-
-### 2. **User Interaction**
-```
-User changes filter (e.g., date range)
-    → Callback triggered
-    → Validate inputs
-    → Check cache for existing result
-    → If cache miss:
-        → Load relevant data chunks
-        → Apply filters
-        → Aggregate/transform data
-        → Cache result
-    → Generate visualization
-    → Update UI components
-```
-
-### 3. **Multi-Year Query**
-```
-User selects multiple years
-    → Load yearly index file
-    → Identify required data files
-    → Load files in parallel (if possible)
-    → Concatenate DataFrames
-    → Apply filters across combined data
-    → Paginate results
-    → Stream to visualization
+                                     ┌──────────────────────────────┐
+                                     │    Cloud Production Env.     │
+                                     │        (e.g., Render)        │
+                                     └──────────────┬───────────────┘
+                                                    │
+                                     ┌──────────────▼──────────────┐
+                                     │  Cloud Production Database  │
+                                     │ (PostgreSQL + PostGIS)      │
+                                     │ ┌─────────────────────────┐ │
+                                     │ │   fact_births           │ │
+                                     │ │   dim_* tables          │ │
+                                     │ │   agg_* tables          │ │
+                                     │ └─────────────────────────┘ │
+                                     └──────────────▲──────────────┘
+                                                    │
+                                          (4) Promote │
+                                                    │
+┌──────────────────────────────┐     ┌──────────────┴──────────────┐     ┌──────────────────────────────┐
+│      Local Development       │     │   Local Production Database │     │      Staging Environment     │
+│                              │     │     (Docker - Port 5434)    │     │      (Docker - Port 5433)    │
+└──────────────┬───────────────┘     └──────────────▲──────────────┘     └──────────────┬───────────────┘
+               │                                    │                                   │
+┌──────────────▼──────────────┐     ┌──────────────┴──────────────┐     ┌──────────────▼──────────────┐
+│      Dash Application        │     │   fact_births, dim_*, agg_* │     │      raw_*, opt_* tables     │
+│ (Python, Plotly, Gunicorn)   │     └─────────────────────────────┘     └──────────────▲──────────────┘
+└──────────────▲───────────────┘                                                       │
+               │                                                              (1, 2, 3)│ ETL Scripts
+               │                                                                       │
+┌──────────────┴──────────────┐     ┌─────────────────────────────┐     ┌──────────────▼──────────────┐
+│       Data Loader            │     │      promote.py             │     │      staging.py              │
+│ (Connects to Local/Cloud DB) │     │      (Promotes to Prod)     │     │      optimize.py             │
+└──────────────────────────────┘     └─────────────────────────────┘     │      dimensions.py           │
+                                                                         └─────────────────────────────┘
 ```
 
 ---
 
-## Data Storage Strategy
+## 3. The Three-Tiered Database Environment
 
-### File Structure
-```
-dashboard_data/
-├── metadata.json                   # Years, record counts, schema info
-├── yearly.parquet                  # 5-year summary (12.5KB)
-├── monthly_YYYY.parquet           # Monthly aggregates per year
-├── state_YYYY.parquet             # State-level aggregates per year
-├── municipality_YYYY.parquet      # Municipality aggregates per year
-└── years/
-    └── YYYY_essential.parquet     # Essential columns for each year
-```
+This architecture separates data processing from data serving, ensuring stability and performance.
 
-### Data Optimization
+### Tier 1: Staging Database (`sinasc_db_staging`)
 
-#### Parquet Optimization
-```python
-# Writing optimized Parquet files
-df.to_parquet(
-    'output.parquet',
-    engine='pyarrow',
-    compression='snappy',      # Fast compression
-    index=False,
-    partition_cols=['year'],   # Partition by year for fast filtering
-    row_group_size=100000,     # Optimize for chunk reading
-)
-```
+-   **Purpose**: The primary environment for data ingestion and transformation. All raw, messy, and intermediate data lives here.
+-   **Technology**: PostgreSQL + PostGIS, running in a local Docker container.
+-   **Tables**:
+    -   `raw_*`: Contain data exactly as ingested from source APIs (e.g., `raw_sinasc_2024`, `raw_ibge_population`).
+    -   `opt_*`: Optimized versions of the raw tables, with corrected data types (e.g., `TEXT` to `INTEGER`, `DATE`), but still in a normalized form.
+-   **Key Processes**: The `staging.py` and `optimize.py` scripts run exclusively against this database.
 
-#### Column Selection
-```python
-# Only load required columns
-ESSENTIAL_COLUMNS = [
-    'DTNASC', 'CODMUNNASC', 'CODMUNRES', 'IDADEMAE', 
-    'GESTACAO', 'PARTO', 'PESO', 'APGAR1', 'APGAR5'
-]
+### Tier 2: Local Production Database (`sinasc_db_prod_local`)
 
-df = pd.read_parquet('data.parquet', columns=ESSENTIAL_COLUMNS)
-```
+-   **Purpose**: A local, clean, production-ready database for development and testing of the dashboard. It is a direct mirror of the cloud production database.
+-   **Technology**: PostgreSQL + PostGIS, running in a separate local Docker container.
+-   **Tables**:
+    -   `fact_births`: The central fact table containing all birth records, optimized and ready for querying.
+    -   `dim_*`: Dimension tables that provide descriptive labels for categorical codes (e.g., `dim_parto` maps `'1'` to `'Vaginal'`).
+    -   `agg_*`: (Future) Pre-aggregated summary tables to speed up common queries.
+-   **Key Processes**: The `promote.py` script populates this database from the staging DB. The local Dash application runs against this database.
 
-#### Data Type Optimization
-```python
-# Optimize memory usage
-DTYPE_MAPPING = {
-    'IDADEMAE': 'int8',        # 8-bit integer (0-127)
-    'GESTACAO': 'int8',
-    'PESO': 'int16',           # 16-bit integer
-    'CODMUNNASC': 'category',  # Categorical for repeated values
-    'PARTO': 'category',
-    'SEXO': 'category',
-}
-```
+### Tier 3: Cloud Production Database (`PROD_RENDER_DATABASE_URL`)
 
-#### Brazilian Number Formatting
-```python
-# Settings configuration (config/settings.py)
-NUMBER_FORMAT = {
-    'thousands_sep': '.',      # Dots for thousands: 2.677.101
-    'decimal_sep': ',',        # Commas for decimals: 28,5
-}
-
-# Implementation pattern
-formatted_number = f"{total_births:_}".replace("_", ".")  # 2.677.101
-formatted_decimal = f"{maternal_age:.1f}".replace(".", ",")  # 28,5 anos
-```
+-   **Purpose**: The live database serving the deployed application on a cloud host like Render.
+-   **Technology**: Managed PostgreSQL + PostGIS service.
+-   **Tables**: Identical schema to the Local Production Database.
+-   **Key Processes**: The `promote.py` script, when run with the `--target render` flag, populates this database. The deployed Dash application connects to this database.
 
 ---
 
-## Caching Strategy
+## 4. The ETL Data Pipeline
 
-### Three-Tier Caching
+The data pipeline is orchestrated by a series of Python scripts located in `dashboard/data/`.
 
-#### 1. **Application-Level Cache** (In-Memory)
-```python
-from functools import lru_cache
-from dash import dcc
+### Step 1: Ingestion (`staging.py`)
 
-# Cache expensive computations
-@lru_cache(maxsize=128)
-def compute_age_distribution(year: int, state: str) -> dict:
-    """Compute and cache age distribution."""
-    # Computation logic
-    return result
+-   **Responsibility**: Extracts data from various public sources and loads it into the staging database.
+-   **Sources**:
+    -   SINASC FTP server (birth records).
+    -   IBGE SIDRA API (population data).
+    -   IBGE GeoJSON files (municipality/state boundaries).
+    -   CNES FTP server (health facility data).
+-   **Key Features**:
+    -   **Chunking**: Reads large CSV/DBF files in chunks to handle multi-gigabyte files without running out of memory.
+    -   **PostGIS Integration**: Converts GeoJSON geometry into WKT (Well-Known Text) format for efficient storage and querying using `GeoAlchemy2`.
+    -   **Idempotent**: Includes an `--overwrite` flag to allow re-running the ingestion process.
 
-# Cache in Dash Store component
-dcc.Store(id='cached-data', storage_type='session')
-```
+### Step 2: Optimization (`optimize.py`)
 
-#### 2. **Pre-Computed Aggregates** (Disk)
-```python
-# Generate aggregates during data preprocessing
-def generate_aggregates(df: pd.DataFrame) -> None:
-    """Generate all common aggregates."""
-    
-    # Monthly totals
-    monthly = df.groupby([df['birth_date'].dt.to_period('M')]).size()
-    monthly.to_parquet('aggregates/monthly_totals.parquet')
-    
-    # State-level summary
-    state_summary = df.groupby('state_code').agg({
-        'PESO': 'mean',
-        'IDADEMAE': 'mean',
-        'APGAR5': 'mean',
-    })
-    state_summary.to_parquet('aggregates/state_summary.parquet')
-```
+-   **Responsibility**: Cleans and optimizes the raw tables created by the staging script.
+-   **Process**:
+    1.  Reads a `raw_*` table from the staging database.
+    2.  Applies a predefined schema to cast columns to efficient data types (e.g., `TEXT` -> `SMALLINT`, `VARCHAR(8)` -> `DATE`).
+    3.  Saves the result as a new `opt_*` table.
+    4.  Optionally (`--overwrite`), it can replace the `raw_*` table with the optimized one to save disk space.
+-   **Key Features**:
+    -   **Schema-Driven**: Uses a `SINASC_OPTIMIZATION_SCHEMA` dictionary to define type mappings.
+    -   **Efficient Transactions**: Uses temporary tables and atomic `RENAME` operations for safe, in-place overwrites.
 
-#### 3. **Browser-Level Cache** (LocalStorage)
-```python
-# Cache visualization configurations
-dcc.Store(
-    id='user-preferences',
-    storage_type='local',  # Persists across sessions
-    data={'default_year': 2024, 'default_state': 'SP'}
-)
-```
+### Step 3: Dimension Creation (`dimensions.py`)
+
+-   **Responsibility**: Creates and populates the dimension tables (`dim_*`) in the staging database.
+-   **Process**: Reads from a `SINASC_MAPPINGS` dictionary which contains the code-to-label mappings for variables like `PARTO` (delivery type), `ESCMAE` (maternal education), etc.
+-   **Output**: Tables like `dim_parto`, `dim_escmae`, `dim_racacor` that can be joined with the fact table to display human-readable names in the dashboard.
+
+### Step 4: Promotion (`promote.py`)
+
+-   **Responsibility**: The final step of the ETL process. It promotes the clean data from the staging environment to a production environment.
+-   **Process**:
+    1.  Connects to both the staging and a target production database (local or cloud).
+    2.  Copies all `opt_*` tables (renaming them to `fact_*`) and all `dim_*` tables to the production database.
+-   **Key Features**:
+    -   **Targeted Promotion**: Can target the local production DB (`--target local`) or the cloud production DB (`--target render`).
+    -   **Decoupling**: This step ensures that the production database only ever receives clean, validated data and is completely isolated from the messy ETL process.
 
 ---
 
-## Component Architecture
+## 5. Dashboard Application
 
-### Page Structure
+### Backend (Dash/Flask)
 
-#### Home Page (`pages/home.py`)
-Multi-year overview with:
-- Year summary cards (last 3 years by default)
-- Birth evolution chart across years
-- Cesarean rate comparison
-- Preterm births analysis (stacked bars + line charts)
-- Adolescent pregnancy analysis (stacked bars + line charts)
-- Brazilian number formatting throughout
+-   **`app.py`**: The main entry point for the Dash application.
+-   **`data/loader.py`**: Contains the `DataLoader` class, which is now responsible for connecting to the production database (determined by an environment variable) and fetching data. All file-based reading logic has been replaced with SQL queries via SQLAlchemy.
+-   **Callbacks**: The dashboard's interactive callbacks trigger SQL queries against the production database. Joins with `dim_*` tables are used to display descriptive labels.
 
-#### Annual Analysis Page (`pages/annual.py`)
-Single-year detailed view with:
-- Year selector dropdown
-- Dynamic metric cards (births, age, weight, cesarean rate)
-- Monthly births timeline
-- Delivery type distribution (donut chart)
-- Maternal age distribution (histogram)
+### Frontend
 
-#### Planned Pages
-- **Temporal Analysis**: Time-series trends (not yet implemented)
-- **Geographic Analysis**: Choropleth maps (not yet implemented)
-- **Insights**: Correlations and statistics (not yet implemented)
+-   **Technology**: Plotly, Dash Bootstrap Components.
+-   **Rendering**: The frontend is rendered server-side by Dash. User interactions trigger callbacks that re-render components with new data from the backend.
 
 ---
 
-## Callback Patterns
+## 6. Local Development Environment
 
-### Pattern 1: Simple Filter Update
-```python
-@callback(
-    Output('chart', 'figure'),
-    Input('year-dropdown', 'value')
-)
-def update_chart(selected_year):
-    """Update chart when year changes."""
-    df_filtered = load_year_data(selected_year)
-    fig = px.histogram(df_filtered, x='maternal_age')
-    return fig
-```
-
-### Pattern 2: Multiple Inputs with State
-```python
-@callback(
-    Output('chart', 'figure'),
-    Output('loading-spinner', 'children'),
-    Input('apply-filters-button', 'n_clicks'),
-    State('date-range', 'value'),
-    State('state-dropdown', 'value'),
-    State('cached-data', 'data'),
-    prevent_initial_call=True
-)
-def apply_filters(n_clicks, date_range, state, cached_data):
-    """Apply multiple filters when button clicked."""
-    # Validate inputs
-    # Load/filter data
-    # Update visualization
-    return fig, "Updated"
-```
-
-### Pattern 3: Chained Updates
-```python
-@callback(
-    Output('municipality-dropdown', 'options'),
-    Input('state-dropdown', 'value')
-)
-def update_municipality_options(selected_state):
-    """Update municipality options based on selected state."""
-    municipalities = get_municipalities_for_state(selected_state)
-    return [{'label': m, 'value': m} for m in municipalities]
-
-@callback(
-    Output('chart', 'figure'),
-    Input('municipality-dropdown', 'value'),
-    State('state-dropdown', 'value')
-)
-def update_chart(municipality, state):
-    """Update chart for selected municipality."""
-    # Filter and visualize
-    return fig
-```
-
-### Pattern 4: Background Callback (Long Operations)
-```python
-from dash import DiskcacheManager, CeleryManager
-
-# For long-running operations
-@callback(
-    Output('result', 'children'),
-    Input('compute-button', 'n_clicks'),
-    background=True,
-    running=[
-        (Output('compute-button', 'disabled'), True, False),
-        (Output('loading-spinner', 'children'), "Computing...", ""),
-    ],
-    manager=DiskcacheManager(cache_by=[lambda: "compute-key"])
-)
-def long_computation(n_clicks):
-    """Perform long computation in background."""
-    # Heavy computation
-    time.sleep(5)
-    return "Result ready"
-```
+-   **`docker-compose.yml`**: Defines the two PostgreSQL services (`db_staging`, `db_prod_local`).
+    -   Uses the official `postgis/postgis` image.
+    -   Maps different host ports (5433, 5434) to the standard container port (5432).
+    -   Mounts an `init-scripts` directory to automatically run a shell script that enables the `postgis` extension on database creation.
+    -   Uses named volumes (`staging_data`, `prod_local_data`) to persist data between container restarts.
+-   **`.env` file**: Stores the connection URLs for all three database tiers, allowing for easy switching between environments.
 
 ---
 
-## Performance Optimization
-
-### Data Loading Strategy
-
-#### Lazy Loading
-```python
-class DataLoader:
-    """Lazy data loader with caching."""
-    
-    def __init__(self):
-        self._cache = {}
-        
-    def load_year(self, year: int, columns: list = None) -> pd.DataFrame:
-        """Load year data with caching."""
-        cache_key = f"{year}_{hash(tuple(columns or []))}"
-        
-        if cache_key not in self._cache:
-            df = pd.read_parquet(
-                f'data/years/{year}/complete.parquet',
-                columns=columns
-            )
-            self._cache[cache_key] = df
-            
-        return self._cache[cache_key]
-```
-
-#### Chunked Reading
-```python
-def read_large_file_in_chunks(filepath: str, chunk_size: int = 100000):
-    """Read large Parquet file in chunks."""
-    parquet_file = pq.ParquetFile(filepath)
-    
-    for batch in parquet_file.iter_batches(batch_size=chunk_size):
-        df_chunk = batch.to_pandas()
-        yield df_chunk
-```
-
-### Visualization Optimization
-
-#### Downsampling Large Datasets
-```python
-def create_optimized_scatter(df: pd.DataFrame, max_points: int = 10000):
-    """Create scatter plot with downsampling."""
-    if len(df) > max_points:
-        df_sample = df.sample(n=max_points, random_state=42)
-    else:
-        df_sample = df
-        
-    fig = px.scatter(df_sample, x='maternal_age', y='birth_weight')
-    return fig
-```
-
-#### WebGL for Large Visualizations
-```python
-fig = go.Figure(
-    data=go.Scattergl(  # Use WebGL for performance
-        x=df['x'],
-        y=df['y'],
-        mode='markers',
-        marker=dict(size=2)
-    )
-)
-```
-
----
-
-## Deployment Architecture
-
-### Render.com Deployment
-
-#### Project Structure
-```
-dashboard/
-├── app.py              # Main entry point
-├── requirements.txt    # Python dependencies
-├── Procfile           # Process definition
-└── render.yaml        # Render configuration
-```
-
-#### `Procfile`
-```
-web: gunicorn app:server --workers 2 --threads 4 --timeout 120
-```
-
-#### `render.yaml`
-```yaml
-services:
-  - type: web
-    name: sinasc-dashboard
-    env: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:server --workers 2 --threads 4
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DATA_PATH
-        value: ./data
-```
-
-### Memory Management
-```python
-import gc
-
-@callback(...)
-def expensive_operation(...):
-    # Computation
-    result = process_data()
-    
-    # Explicit garbage collection
-    gc.collect()
-    
-    return result
-```
-
----
-
-## Monitoring & Logging
-
-### Performance Monitoring
-```python
-import time
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-def timed_callback(func):
-    """Decorator to time callback execution."""
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        duration = time.time() - start
-        logger.info(f"{func.__name__} took {duration:.2f}s")
-        return result
-    return wrapper
-
-@callback(...)
-@timed_callback
-def update_chart(...):
-    # Callback logic
-    pass
-```
-
-### Error Tracking
-```python
-import traceback
-
-@callback(...)
-def safe_callback(...):
-    try:
-        # Callback logic
-        return result
-    except Exception as e:
-        logger.error(f"Error in callback: {str(e)}")
-        logger.error(traceback.format_exc())
-        return error_layout(str(e))
-```
-
----
-
-## Security Considerations
-
-### Input Validation
-```python
-def validate_year(year: int) -> bool:
-    """Validate year input."""
-    return 2010 <= year <= 2024
-
-def validate_state_code(code: str) -> bool:
-    """Validate Brazilian state code."""
-    valid_codes = [str(i) for i in range(11, 54)]
-    return code in valid_codes
-```
-
-### Rate Limiting (Future)
-```python
-from flask_limiter import Limiter
-
-limiter = Limiter(
-    app.server,
-    key_func=lambda: request.remote_addr,
-    default_limits=["200 per day", "50 per hour"]
-)
-```
-
----
-
-## Testing Strategy
-
-### Unit Tests
-```python
-# tests/test_data_processing.py
-import pytest
-from data.loader import DataLoader
-
-def test_load_year_data():
-    loader = DataLoader()
-    df = loader.load_year(2024)
-    assert len(df) > 0
-    assert 'DTNASC' in df.columns
-```
-
-### Integration Tests
-```python
-# tests/test_callbacks.py
-from dash.testing.application_runners import import_app
-
-def test_filter_callback(dash_duo):
-    app = import_app("app")
-    dash_duo.start_server(app)
-    
-    # Interact with components
-    dash_duo.wait_for_element("#year-dropdown").send_keys("2024")
-    
-    # Assert results
-    assert dash_duo.find_element("#chart").is_displayed()
-```
-
----
-
-## Future Enhancements
-
-### Phase 2: Advanced Features
-- **Real-time updates**: WebSocket integration
-- **ML predictions**: Birth weight prediction models
-- **Export functionality**: PDF reports, Excel downloads
-- **User authentication**: Saved dashboards, custom views
-- **API endpoints**: RESTful API for data access
-
-### Technical Improvements
-- Add comprehensive test coverage
-- Set up CI/CD pipeline
-- Add monitoring/alerting for production
-
----
-
-*Last Updated: January 2025*
+*Last Updated: October 2025*

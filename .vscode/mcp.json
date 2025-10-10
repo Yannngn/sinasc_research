@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "dbhub": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bytebase/dbhub",
+        "--transport",
+        "stdio",
+        "--dsn",
+        "${env:PROD_LOCAL_DATABASE_URL}"
+      ]
+    },
+    "Figma MCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key=${env:FIGMA_MCP_API_KEY}",
+        "--stdio"
+      ]
+    },
+  },
+  "inputs": [],
+}

@@ -1,61 +1,78 @@
 # SINASC Research Dashboard
 
-Interactive web dashboard for analyzing Brazilian perinatal health data from SINASC (Sistema de Informações sobre Nascidos Vivos).
+Interactive web dashboard for analyzing Brazilian perinatal health data from SINASC (Sistema de Informações sobre Nascidos Vivos), powered by a robust PostgreSQL backend and a full ETL pipeline.
 
 ## 📊 Overview
 
-This project provides data analysis and visualization of Brazilian birth records covering 5 years (2019-2024) with over 10 million records. The dashboard is built with Plotly Dash for interactive exploration of maternal and child health metrics.
+This project provides a comprehensive platform for analyzing Brazilian birth records. It features a complete ETL (Extract, Transform, Load) pipeline that processes raw data from public sources, stores it in a PostgreSQL database, and serves it to a Plotly Dash dashboard for interactive exploration.
+
+The architecture supports both local development with Docker and cloud deployment on platforms like Render.
 
 ## 🎯 Features
 
 ### Current Implementation
-- **Multi-Year Overview**: Compare key metrics across 5 years (2019-2024)
-- **Annual Analysis**: Detailed monthly breakdowns and distributions for each year
-- **Pre-aggregated Data**: Optimized Parquet files for fast loading
-- **Brazilian Formatting**: Numbers formatted with Brazilian conventions (dots for thousands, commas for decimals)
-- **Interactive Charts**: Birth trends, cesarean rates, preterm births, adolescent pregnancies
+- **ETL Pipeline**: Automated scripts for data ingestion, type optimization, and dimension table creation.
+- **PostgreSQL Backend**: Scalable and robust data storage using PostgreSQL with PostGIS for geospatial analysis.
+- **Staging & Production Environments**: Dual database setup (staging for processing, production for serving) manageable via Docker.
+- **Multi-Year Analysis**: Compare key metrics across multiple years.
+- **Geographic Analysis**: Interactive maps and regional data exploration.
+- **Interactive Charts**: Explore trends in cesarean rates, preterm births, maternal age, and more.
 
 ### Key Metrics Tracked
-- Total births per year/month
-- Maternal age distribution
-- Birth weight statistics
-- APGAR scores
-- Cesarean vs. vaginal delivery rates
-- Preterm birth rates (including extreme preterm <32 weeks)
-- Adolescent pregnancy rates (including very young mothers <15 years)
-- Hospital birth percentage
+- Total births by year, month, state, and municipality.
+- Maternal age distribution.
+- Birth weight statistics and low-weight births.
+- APGAR scores.
+- Cesarean vs. vaginal delivery rates.
+- Preterm birth rates.
+- Adolescent pregnancy rates.
+- Geographic distribution of births.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.12+ (3.13 supported for local development)
+- **Docker** and **Docker Compose**
+- Python 3.12+
 - UV package manager (recommended) or pip
 
-### Installation
+### Installation & Setup
 
-```bash
-# Clone the repository
-git clone https://github.com/Yannngn/sinasc_research.git
-cd sinasc_research
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/Yannngn/sinasc_research.git
+    cd sinasc_research
+    ```
 
-# Install dependencies with UV
-uv sync
+2.  **Set up environment variables:**
+    Create a `.env` file by copying the example file:
+    ```bash
+    cp .env.example .env
+    ```
+    *No changes are needed in `.env` for the default local setup.*
 
-# Or with pip
-pip install -r requirements.txt
-```
+3.  **Install Python dependencies:**
+    ```bash
+    uv sync
+    ```
 
-### Run the Dashboard
+4.  **Launch the databases:**
+    This command starts the staging and local production PostgreSQL databases in Docker.
+    ```bash
+    docker-compose up -d
+    ```
 
-```bash
-# Development mode
-cd dashboard
-python app.py
+### Run the Full Pipeline & Dashboard
 
-# Production mode
-cd dashboard
-gunicorn app:server --bind 0.0.0.0:8050
-```
+1.  **Run the ETL pipeline:**
+    This script will ingest, optimize, and promote the data to your local databases.
+    ```bash
+    python -m dashboard.data.run_all
+    ```
+
+2.  **Run the Dashboard:**
+    ```bash
+    python -m dashboard.app
+    ```
 
 Visit: http://localhost:8050
 
@@ -65,59 +82,52 @@ Visit: http://localhost:8050
 sinasc_research/
 ├── dashboard/              # Dashboard application
 │   ├── app.py             # Main entry point
+│   ├── data/              # Data pipeline scripts (ETL)
+│   │   ├── staging.py     # Ingests raw data
+│   │   ├── optimize.py    # Optimizes data types
+│   │   ├── dimensions.py  # Creates dimension tables
+│   │   ├── promote.py     # Promotes data to production
+│   │   └── run_all.py     # Orchestrates the pipeline
 │   ├── pages/             # Dashboard pages
-│   ├── components/        # Reusable UI components
-│   └── ...
-├── dashboard_data/         # Pre-aggregated data files for the dashboard
-├── deployment/             # All deployment configurations (Dockerfile, render.yaml, etc.)
-├── src/                   # Data processing and utility scripts
-│   ├── README.md          # Guide to running the pipeline
-│   ├── run_pipeline.py    # Main orchestrator for data processing
-│   ├── pipeline/          # Sequenced data processing steps
-│   ├── deployment/        # Deployment preparation scripts
-│   └── utils/             # Shared utility modules
+│   └── components/        # Reusable UI components
+├── deployment/             # Deployment configurations (Dockerfile, render.yaml)
 ├── docs/                   # Project documentation
-└── data/                   # Raw data source (not in repo)
+├── data/                   # Raw data source (not in repo)
+└── docker-compose.yml      # Defines local database services
 ```
 
 ## 📚 Documentation
 
-- **[Dashboard README](dashboard/README.md)**: Detailed dashboard architecture and features
-- **[Quick Start Guide](docs/QUICKSTART.md)**: Getting started with the dashboard
-- **[Structure Guide](docs/STRUCTURE.md)**: Dashboard page organization
-- **[Design System](docs/DESIGN_SYSTEM.md)**: UI/UX design patterns
-- **[Architecture](docs/ARCHITECTURE.md)**: Technical architecture details
-- **[Deployment Guide](deployment/README.md)**: How to deploy to production
+- **[Quick Start Guide](docs/QUICKSTART.md)**: Detailed setup and development guide.
+- **[Architecture](docs/ARCHITECTURE.md)**: In-depth explanation of the three-tiered database architecture.
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)**: How to deploy the application and database to Render.
+- **[Data Pipeline](docs/PIPELINE.md)**: Details on the ETL process.
 
 ## 🌐 Deployment
 
-The dashboard is optimized for free-tier hosting:
+The application is designed for cloud deployment on services like Render. The architecture includes separate staging and production databases, which can be mapped to local Docker containers or cloud-hosted PostgreSQL instances.
 
-- **Data size**: ~200MB total, <13KB for aggregated files
-- **Memory usage**: <200MB RAM
-- **Recommended**: Render.com (free tier with 512MB RAM)
-
-See [Deployment Guide](docs/DEPLOYMENT_README.md) for detailed instructions.
+See the **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** for detailed instructions.
 
 ## 📊 Data Source
 
-- **DATASUS**: Brazilian Ministry of Health
-- **Dataset**: SINASC (Sistema de Informações sobre Nascidos Vivos)
-- **Coverage**: 2019-2024 (10,036,633 records)
-- **Public Domain**: Open data for research and analysis
+- **DATASUS**: Brazilian Ministry of Health (SINASC, CNES)
+- **IBGE**: Brazilian Institute of Geography and Statistics (Population, Geospatial Data)
+- **Public Domain**: All data is open for research and analysis.
 
 ## 🛠️ Technology Stack
 
-- **Framework**: Plotly Dash 3.2+
-- **UI Components**: Dash Bootstrap Components 2.0+
-- **Data Processing**: Pandas 2.3+, PyArrow 21.0+
-- **Visualization**: Plotly 6.3+
-- **Deployment**: Gunicorn 23.0+
+- **Backend**: Python, PostgreSQL, PostGIS
+- **Framework**: Plotly Dash
+- **Data Processing**: Pandas, SQLAlchemy, GeoAlchemy2
+- **Environment**: Docker, Docker Compose
+- **UI**: Dash Bootstrap Components
+- **Deployment**: Gunicorn
 
 ## 📄 License
 
 - **Code**: MIT License
-- **Data**: Public domain (DATASUS)
+- **Data**: Public domain (DATASUS, IBGE)
 
 ## 👤 Author
 
