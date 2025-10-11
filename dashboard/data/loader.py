@@ -5,7 +5,6 @@ This module provides database-backed data loading for the dashboard,
 replacing the previous Parquet file-based approach.
 """
 
-import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -29,7 +28,7 @@ class DataLoader:
     Loads data directly from PostgreSQL aggregate tables instead of Parquet files.
     """
 
-    def __init__(self, use_staging: bool = False, use_local: bool = True, use_onrender: bool = False):
+    def __init__(self):
         """
         Initialize data loader.
 
@@ -38,12 +37,20 @@ class DataLoader:
             use_local: If True, connect to local DB; otherwise remote DB
             use_onrender: If True, connect to OnRender DB; otherwise remote DB
         """
-        if use_onrender:
-            self.engine = get_prod_db_engine()
-        elif use_local:
+
+        # Attempt connections in order: local -> prod internal -> staging
+        try:
             self.engine = get_local_db_engine()
-        else:
-            self.engine = get_staging_db_engine()
+        except Exception as e_local:
+            try:
+                self.engine = get_prod_db_engine()
+            except Exception as e_prod:
+                try:
+                    self.engine = get_staging_db_engine()
+                except Exception as e_staging:
+                    raise ValueError(
+                        f"Failed to connect to any database. Local error: {e_local}; Prod internal error: {e_prod}; Staging error: {e_staging}"
+                    )
 
         self.metadata = self._load_metadata_from_db()
         self.available_years = self.metadata.get("years", [])
@@ -469,17 +476,4 @@ class DataLoader:
             return {}
 
 
-try:
-    _use_onrender = os.getenv("PROD_POSTGRES_INTERNAL_DATABASE_URL") is not None
-except ValueError:
-    _use_onrender = False
-try:
-    _use_local = os.getenv("PROD_LOCAL_DATABASE_URL") is None
-except ValueError:
-    _use_local = False
-try:
-    _use_staging = os.getenv("STAGING_DATABASE_URL") is not None
-except ValueError:
-    _use_staging = False
-
-data_loader = DataLoader(use_staging=_use_staging, use_local=_use_local, use_onrender=_use_onrender)
+data_loader = DataLoader()
