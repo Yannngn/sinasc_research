@@ -140,7 +140,7 @@ sinasc_research/
 ### For New Users (Getting Started)
 1. **[../README.md](../README.md)** - Project overview
 2. **[QUICKSTART.md](QUICKSTART.md)** - Setup and installation
-3. **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** - Run the pipeline
+3. **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** - Pipeline architecture
 
 ### For Data Engineers (Running the Pipeline)
 1. **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** - Pipeline architecture and execution
@@ -175,7 +175,7 @@ sinasc_research/
 ### "I want to understand the pipeline"
 1. Read **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)**
 2. Review pipeline step scripts
-3. Check **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** for usage
+3. Check **[QUICKSTART.md](QUICKSTART.md)** for setup and execution
 
 ### "I want to deploy to production"
 1. Read **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**
@@ -208,7 +208,7 @@ Core documentation:
 - ✅ Deployment guide (DEPLOYMENT_GUIDE.md)
 - ✅ Code standards (CODING_STANDARDS.md)
 - ✅ Design system (DESIGN_SYSTEM.md)
-- ✅ Data structure docs (YEARLY_SUMMARY_VARIABLES.md, DASHBOARD_DATA_SUMMARY.md)
+- ✅ Data structure docs (YEARLY_SUMMARY_VARIABLES.md)
 
 ---
 
