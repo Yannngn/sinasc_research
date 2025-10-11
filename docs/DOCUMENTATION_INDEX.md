@@ -48,18 +48,11 @@ This directory contains comprehensive documentation for the SINASC Research Dash
 - 5-step transformation process
 - Memory-efficient implementation
 - Performance benchmarks
-
-#### **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** 🔄
 - Complete pipeline execution guide
-- Data refresh procedures
-- Troubleshooting common issues
 
 ### Dashboard Features
 
-#### **[DASHBOARD_DATA_SUMMARY.md](DASHBOARD_DATA_SUMMARY.md)** 📊
-- Available metrics and indicators
-- Data aggregation levels
-- Dashboard page descriptions
+
 
 #### **[YEARLY_SUMMARY_VARIABLES.md](YEARLY_SUMMARY_VARIABLES.md)** 📈
 - Annual summary metrics
@@ -150,8 +143,8 @@ sinasc_research/
 3. **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** - Run the pipeline
 
 ### For Data Engineers (Running the Pipeline)
-1. **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** - Pipeline architecture
-2. **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** - Execution guide
+1. **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** - Pipeline architecture and execution
+2. **[QUICKSTART.md](QUICKSTART.md)** - Setup and pipeline commands
 3. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Database design
 
 ### For Developers (Contributing Code)
