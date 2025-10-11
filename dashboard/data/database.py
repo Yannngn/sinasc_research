@@ -15,8 +15,8 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), os.pardir, os.pa
 
 # Load URLs from environment variables
 STAGING_DB_URL = os.getenv("STAGING_DATABASE_URL")
-PROD_DB_URL = os.getenv("POSTGRES_INTERNAL_DATABASE_URL")
 LOCAL_DB_URL = os.getenv("PROD_LOCAL_DATABASE_URL")
+PROD_DB_URL = os.getenv("PROD_POSTGRES_INTERNAL_DATABASE_URL")
 
 # Create singleton engine instances
 _staging_engine = None
@@ -65,11 +65,11 @@ def get_prod_db_engine() -> Engine:
     Returns the SQLAlchemy engine for the production database.
 
     Raises:
-        ValueError: If the PRODUCTION_DATABASE_URL is not set.
+        ValueError: If the PROD_POSTGRES_INTERNAL_DATABASE_URL is not set.
 
     Returns:
         SQLAlchemy Engine for the production database.
     """
     if _prod_engine is None:
-        raise ValueError("POSTGRES_INTERNAL_DATABASE_URL environment variable is not set.")
+        raise ValueError("PROD_POSTGRES_INTERNAL_DATABASE_URL environment variable is not set.")
     return _prod_engine
