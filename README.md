@@ -64,14 +64,21 @@ The architecture supports both local development with Docker and cloud deploymen
 ### Run the Full Pipeline & Dashboard
 
 1.  **Run the ETL pipeline:**
-    This script will ingest, optimize, and promote the data to your local databases.
+    This will ingest raw data, run the SQL-based transformation pipeline, and promote to production.
     ```bash
-    python -m dashboard.data.run_all
+    # Ingest raw data from APIs
+    python dashboard/data/staging.py
+    
+    # Run SQL-based transformation pipeline
+    python dashboard/data/pipeline/run_all.py
+    
+    # Promote to local production database
+    python dashboard/data/promote.py --target local
     ```
 
 2.  **Run the Dashboard:**
     ```bash
-    python -m dashboard.app
+    python dashboard/app.py
     ```
 
 Visit: http://localhost:8050
@@ -83,25 +90,33 @@ sinasc_research/
 ├── dashboard/              # Dashboard application
 │   ├── app.py             # Main entry point
 │   ├── data/              # Data pipeline scripts (ETL)
-│   │   ├── staging.py     # Ingests raw data
+│   │   ├── staging.py     # Ingests raw data from APIs
 │   │   ├── optimize.py    # Optimizes data types
-│   │   ├── dimensions.py  # Creates dimension tables
 │   │   ├── promote.py     # Promotes data to production
-│   │   └── run_all.py     # Orchestrates the pipeline
-│   ├── pages/             # Dashboard pages
-│   └── components/        # Reusable UI components
-├── deployment/             # Deployment configurations (Dockerfile, render.yaml)
-├── docs/                   # Project documentation
-├── data/                   # Raw data source (not in repo)
-└── docker-compose.yml      # Defines local database services
+│   │   ├── loader.py      # Dashboard data loading
+│   │   ├── database.py    # Database connections
+│   │   └── pipeline/      # SQL-based transformation pipeline
+│   │       ├── run_all.py         # Orchestrates all steps
+│   │       ├── step_01_select.py  # Select essential columns
+│   │       ├── step_02_create.py  # Create fact table
+│   │       ├── step_03_bin.py     # Create dimension tables
+│   │       ├── step_04_engineer.py # Engineer features
+│   │       └── step_05_aggregate.py # Create aggregations
+│   ├── pages/             # Dashboard pages (home, annual, geographic)
+│   ├── components/        # Reusable UI components (cards, charts)
+│   └── config/            # Configuration and constants
+├── deployment/            # Deployment configurations (Dockerfile, render.yaml)
+├── docs/                  # Project documentation
+└── docker-compose.yml     # Defines local database services
 ```
 
 ## 📚 Documentation
 
+- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)**: Complete documentation overview and navigation guide.
 - **[Quick Start Guide](docs/QUICKSTART.md)**: Detailed setup and development guide.
 - **[Architecture](docs/ARCHITECTURE.md)**: In-depth explanation of the three-tiered database architecture.
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)**: How to deploy the application and database to Render.
-- **[Data Pipeline](docs/PIPELINE.md)**: Details on the ETL process.
+- **[Data Pipeline](dashboard/data/pipeline/README.md)**: SQL-based transformation pipeline details.
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)**: How to deploy the application and database to cloud platforms.
 
 ## 🌐 Deployment
 
