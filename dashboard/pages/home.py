@@ -234,7 +234,7 @@ def create_layout() -> html.Div:
                         dbc.Col(
                             [
                                 dcc.Dropdown(
-                                    id="yearly-charts-year-dropdown",
+                                    id="birth-year-dropdown",
                                     options=[{"label": str(year), "value": year} for year in available_years],
                                     value=available_years[0],  # Default to the most recent year
                                     clearable=False,
@@ -242,7 +242,7 @@ def create_layout() -> html.Div:
                                     style={"width": "100%"},
                                 ),
                                 dcc.Dropdown(
-                                    id="yearly-charts-type-dropdown",
+                                    id="birth-type-dropdown",
                                     options=[
                                         {"label": "Absoluto", "value": "absolute"},
                                         {"label": "Por 1.000 Hab", "value": "per_1k"},
@@ -255,7 +255,7 @@ def create_layout() -> html.Div:
                             ],
                             width=12,
                             lg=4,
-                            className="d-flex justify-content-center align-items-end",
+                            className="d-flex justify-content-center align-items-end gap-2",
                         ),
                     ],
                 ),
@@ -280,7 +280,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -308,7 +309,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -353,7 +355,15 @@ def create_layout() -> html.Div:
                         dbc.Col(
                             [
                                 dcc.Dropdown(
-                                    id="indicator-dropdown",
+                                    id="indicator-year-dropdown",
+                                    options=[{"label": str(year), "value": year} for year in available_years],
+                                    value=available_years[0],  # Default to the most recent year
+                                    clearable=False,
+                                    className="mb-3",
+                                    style={"width": "100%"},
+                                ),
+                                dcc.Dropdown(
+                                    id="indicator-type-dropdown",
                                     options=[
                                         {"label": "Cesáreas", "value": "cesarean"},
                                         {"label": "Nascimentos Prematuros", "value": "preterm"},
@@ -365,11 +375,11 @@ def create_layout() -> html.Div:
                                     clearable=False,
                                     className="mb-3",
                                     style={"width": "100%"},
-                                )
+                                ),
                             ],
                             width=12,
                             lg=4,
-                            className="d-flex justify-content-center align-items-end",
+                            className="d-flex justify-content-center align-items-end gap-2",
                         ),
                     ],
                 ),
@@ -393,7 +403,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -420,7 +431,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -451,7 +463,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -478,7 +491,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -505,7 +519,8 @@ def create_layout() -> html.Div:
                                                     config=CHART_CONFIG,  # type:ignore
                                                     style={"height": f"{CHART_HEIGHT}px"},
                                                 )
-                                            ]
+                                            ],
+                                            className="p-0",
                                         ),
                                     ],
                                     className="shadow-sm",
@@ -571,7 +586,7 @@ def register_callbacks(app):
             Output("absolute-indicator-chart-title", "children"),
             Output("relative-indicator-chart-title", "children"),
         ],
-        Input("indicator-dropdown", "value"),
+        Input("indicator-type-dropdown", "value"),
     )
     def update_indicator_charts(selected_indicator):
         """Update the absolute and relative indicator charts based on the selected indicator."""
@@ -618,9 +633,10 @@ def register_callbacks(app):
 
     @app.callback(
         Output("home-indicator-pie-chart", "figure"),
-        Input("indicator-dropdown", "value"),
+        Input("indicator-type-dropdown", "value"),
+        Input("indicator-year-dropdown", "value"),
     )
-    def update_indicator_pie_chart(selected_indicator):
+    def update_indicator_pie_chart(selected_indicator, selected_year):
         """Update the pie chart based on the selected indicator."""
         df = data_loader.load_yearly_aggregates()
 
@@ -628,8 +644,8 @@ def register_callbacks(app):
         indicator_data = INDICATOR_MAPPINGS[selected_indicator]
 
         # Aggregate data for the pie chart
-        total = df[indicator_data["absolute"]].sum()
-        other = df["total_births"].sum() - total
+        total: int = df.loc[df["year"] == selected_year, indicator_data["absolute"]].sum()  # type: ignore
+        other: int = df.loc[df["year"] == selected_year, "total_births"].sum() - total  # type: ignore
 
         pie_data = {
             "labels": [indicator_data["label"], "Outros"],
@@ -666,18 +682,17 @@ def register_callbacks(app):
             Output("indicator-choropleth-map", "figure"),
             Output("indicator-relative-choropleth-map", "figure"),
         ],
-        Input("indicator-dropdown", "value"),
-        Input("year-pagination", "active_page"),
+        Input("indicator-type-dropdown", "value"),
+        Input("indicator-year-dropdown", "value"),
     )
-    def update_indicator_maps(selected_indicator, active_page):
-        """Update both absolute and relative choropleth maps for the selected indicator and page."""
-        year = data_loader.get_available_years()[active_page - 1]
-        df = data_loader.load_yearly_state_aggregates(year)
+    def update_indicator_maps(selected_indicator, selected_year):
+        """Update both absolute and relative choropleth maps for the selected indicator and year."""
+        df = data_loader.load_yearly_state_aggregates(selected_year)
         geojson = data_loader._load_brazil_states_geojson()
         indicator_data = INDICATOR_MAPPINGS[selected_indicator]
 
         abs_map = create_choropleth_chart(
-            df.loc[df["year"] == year],
+            df,
             geojson=geojson,
             indicator=indicator_data["label"],
             color=indicator_data["absolute"],
@@ -686,7 +701,7 @@ def register_callbacks(app):
         )
 
         rel_map = create_choropleth_chart(
-            df.loc[df["year"] == year],
+            df,
             geojson=geojson,
             indicator=indicator_data["label"],
             color=indicator_data["relative"],
@@ -699,8 +714,8 @@ def register_callbacks(app):
     @app.callback(
         Output("state-level-map", "figure"),
         [
-            Input("yearly-charts-year-dropdown", "value"),
-            Input("yearly-charts-type-dropdown", "value"),
+            Input("birth-year-dropdown", "value"),
+            Input("birth-type-dropdown", "value"),
         ],
     )
     def update_yearly_charts(selected_year, selected_type):
@@ -720,7 +735,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("home-births-evolution", "figure"),
-        Input("yearly-charts-type-dropdown", "value"),
+        Input("birth-type-dropdown", "value"),
     )
     def update_births_evolution(selected_type):
         """Update births evolution chart based on selected year and type."""
