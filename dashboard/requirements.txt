@@ -19,3 +19,6 @@ retrying==1.4.2
 typing-extensions==4.15.0
 werkzeug==3.1.3
 geopandas==1.1.1
+sqlalchemy==2.0.43
+shapely==2.1.1
+geoalchemy2==0.18.0
