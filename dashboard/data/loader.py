@@ -41,13 +41,13 @@ class DataLoader:
         # Attempt connections in order: local -> prod internal -> staging
         try:
             self.engine = get_local_db_engine()
-        except Exception as e_local:
+        except ValueError as e_local:
             try:
                 self.engine = get_prod_db_engine()
-            except Exception as e_prod:
+            except ValueError as e_prod:
                 try:
                     self.engine = get_staging_db_engine()
-                except Exception as e_staging:
+                except ValueError as e_staging:
                     raise ValueError(
                         f"Failed to connect to any database. Local error: {e_local}; Prod internal error: {e_prod}; Staging error: {e_staging}"
                     )
