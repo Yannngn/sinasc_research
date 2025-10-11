@@ -73,29 +73,51 @@ docker-compose up -d
 
 ## 4. Running the Data Pipeline
 
-The data pipeline is a series of Python scripts that perform the full ETL process. A single command runs all the necessary steps in sequence.
+The data pipeline consists of three main stages: ingestion, transformation, and promotion. Each stage can be run independently or as part of a complete workflow.
 
-**Run the entire pipeline:**
+### Complete Pipeline Workflow
 
+**Step 1: Ingest raw data from APIs**
 ```bash
-python -m dashboard.data.run_all
+python dashboard/data/staging.py
 ```
+This downloads raw SINASC data and ingests it into the `sinasc_db_staging` database.
 
-This command executes the following steps:
-1.  **Staging (`staging.py`)**: Downloads raw data for SINASC, IBGE (population), and CNES (health facilities) and ingests it into the `sinasc_db_staging` database.
-2.  **Optimization (`optimize.py`)**: Optimizes the data types of the tables in the staging database to reduce storage and improve query performance (e.g., converts `TEXT` to `INTEGER` or `DATE`).
-3.  **Dimensions (`dimensions.py`)**: Creates and populates dimension tables (e.g., `dim_parto`, `dim_escmae`) that store human-readable labels for categorical data.
-4.  **Promotion (`promote.py`)**: Copies the clean, optimized tables (`fact_*`, `dim_*`) from the staging database to the `sinasc_db_prod_local` database.
+**Step 2: Run SQL-based transformation pipeline**
+```bash
+python dashboard/data/pipeline/run_all.py
+```
+This executes 5 SQL-based transformation steps:
+1.  **Select**: Extracts essential columns from raw tables
+2.  **Create**: Builds unified `fact_births` table from all years
+3.  **Bin**: Creates dimension tables (`dim_*`) for categorical data
+4.  **Engineer**: Adds computed features (e.g., `is_preterm`, `is_cesarean`)
+5.  **Aggregate**: Generates pre-computed summary tables (`agg_*`)
+
+**Step 3: Promote to production**
+```bash
+python dashboard/data/promote.py --target local
+```
+This copies the transformed tables (`dim_*`, `agg_*`) from staging to the `sinasc_db_prod_local` database.
+
+### Pipeline Details
+- **Memory Efficient**: All transformations use SQL, keeping Python memory usage <200MB
+- **Incremental**: Can add new years without reprocessing everything
+- **Fast**: SQL operations are optimized for large datasets (10M+ rows)
+- See `dashboard/data/pipeline/README.md` for detailed documentation
 
 ## 5. Running the Dashboard
 
 Once the pipeline has successfully populated the local production database, you can launch the web application.
 
 ```bash
-python -m dashboard.app
+python dashboard/app.py
 ```
 
-The dashboard will connect to your `sinasc_db_prod_local` database.
+The dashboard will:
+- Connect to your `sinasc_db_prod_local` database
+- Load pre-aggregated data from `agg_*` tables
+- Query dimension tables (`dim_*`) for labels and lookups
 
 Navigate to **http://localhost:8050** in your web browser to see the application.
 
@@ -104,9 +126,28 @@ Navigate to **http://localhost:8050** in your web browser to see the application
 Your typical development workflow will be:
 
 1.  **Start services**: `docker-compose up -d`
-2.  **Process data**: `python -m dashboard.data.run_all` (only needs to be run once, or again if raw data changes)
-3.  **Run the app**: `python -m dashboard.app`
+2.  **Process data** (only needs to be run once, or when adding new data):
+    ```bash
+    python dashboard/data/staging.py
+    python dashboard/data/pipeline/run_all.py
+    python dashboard/data/promote.py --target local
+    ```
+3.  **Run the app**: `python dashboard/app.py`
 4.  **Code**: Make changes to the dashboard pages, components, or data loader. The web app will hot-reload.
+
+### Adding New Data
+
+To add new SINASC data (e.g., for 2025):
+```bash
+# Ingest new year
+python dashboard/data/staging.py --years 2025
+
+# Re-run pipeline (handles new data incrementally)
+python dashboard/data/pipeline/run_all.py
+
+# Promote to production
+python dashboard/data/promote.py --target local
+```
 
 ## 7. Stopping the Environment
 

@@ -6,10 +6,11 @@ This is a **Plotly Dash web dashboard** for analyzing Brazilian perinatal health
 
 ### Tech Stack
 - **Framework**: Plotly Dash (Python web framework)
-- **Data**: Pandas, PyArrow (Parquet files)
+- **Database**: PostgreSQL with PostGIS (staging and production environments)
+- **Data Processing**: Pandas, SQLAlchemy, SQL-based ETL pipeline
 - **Visualization**: Plotly Express, Plotly Graph Objects
 - **UI**: Dash Bootstrap Components
-- **Deployment**: Free tier hosting (Render.com/Hugging Face Spaces)
+- **Deployment**: Docker (local), Render.com (cloud)
 
 ---
 
@@ -107,50 +108,84 @@ def update_timeline_chart(date_range, selected_state, current_data):
 
 ### Performance Optimization
 ```python
-# Cache expensive computations
-from functools import lru_cache
+# Dashboard loads pre-aggregated data from database
+from dashboard.data.loader import data_loader
 
-@lru_cache(maxsize=128)
-def load_aggregated_data(year: int) -> pd.DataFrame:
-    """Load pre-aggregated data for a specific year."""
-    pass
+# All queries use pre-computed aggregate tables (fast)
+yearly_summary = data_loader.get_yearly_summary(year=2024)
+monthly_data = data_loader.get_monthly_aggregates(year=2024)
+state_data = data_loader.get_state_aggregates(year=2024)
 
-# Use efficient data types
-df['maternal_age'] = df['IDADEMAE'].astype('Int8')
-df['state_code'] = df['CODMUNNASC'].astype('category')
-
-# Limit data in callbacks
-df_sample = df.head(10000)  # For initial load
+# For SQL queries, use SQLAlchemy
+from sqlalchemy import text
+with engine.connect() as conn:
+    result = conn.execute(text("""
+        SELECT year, total_births 
+        FROM agg_yearly 
+        WHERE year >= 2020
+    """))
+    df = pd.DataFrame(result.fetchall(), columns=result.keys())
 ```
 
 ---
 
 ## Data Processing Guidelines
 
+### Database Architecture
+The project uses a **three-tiered database architecture**:
+1. **Staging Database**: Raw data ingestion and transformation
+2. **Local Production Database**: Docker container for local development
+3. **Cloud Production Database**: Managed PostgreSQL for deployment
+
+### Data Pipeline
+The ETL pipeline is **SQL-centric** for memory efficiency:
+1. **Staging** (`staging.py`): Ingest raw data from APIs
+2. **Pipeline** (5 SQL-based steps):
+   - Step 01: Select essential columns
+   - Step 02: Create fact table (unified, all years)
+   - Step 03: Create dimension tables
+   - Step 04: Engineer features (boolean indicators)
+   - Step 05: Create aggregations (pre-computed summaries)
+3. **Promotion** (`promote.py`): Copy to production database
+
 ### Column Name Conventions
 - **Original SINASC columns**: Keep uppercase (e.g., `DTNASC`, `IDADEMAE`)
-- **Engineered features**: Use descriptive snake_case (e.g., `maternal_age_group`, `is_preterm`)
-- **Aggregated columns**: Prefix with `agg_` (e.g., `agg_births_total`, `agg_cesarean_rate`)
+- **Engineered features**: Use descriptive snake_case (e.g., `is_preterm`, `is_cesarean`)
+- **Aggregate tables**: Prefix with `agg_` (e.g., `agg_yearly`, `agg_monthly`)
+- **Dimension tables**: Prefix with `dim_` (e.g., `dim_maternal_age_group`)
+- **Fact tables**: Prefix with `fact_` (e.g., `fact_births`)
 
-### Handling Missing Data
+### Data Loading Pattern
 ```python
-# Document missing value codes
-MISSING_VALUE_CODES = {
-    'IDADEMAE': [0, 99],
-    'ESCMAE': [9],
-    'ESTCIVMAE': [9],
-}
+# Dashboard loads data from PostgreSQL, not Parquet files
+from dashboard.data.loader import data_loader
 
-# Replace with pd.NA for consistency
-df['IDADEMAE'] = df['IDADEMAE'].replace(MISSING_VALUE_CODES['IDADEMAE'], pd.NA)
+# Get available years
+years = data_loader.get_available_years()
+
+# Load yearly summary (from agg_yearly table)
+yearly_data = data_loader.get_yearly_summary(year=2024)
+
+# Load monthly aggregates
+monthly_data = data_loader.get_monthly_aggregates(year=2024)
 ```
 
-### Date Handling
+### SQL-Based Transformations
 ```python
-# Convert DTNASC to datetime
-df['birth_date'] = pd.to_datetime(df['DTNASC'], format='%d%m%Y', errors='coerce')
-df['birth_year'] = df['birth_date'].dt.year
-df['birth_month'] = df['birth_date'].dt.month
+# Prefer SQL for heavy operations
+from sqlalchemy import text
+
+with engine.connect() as conn:
+    # Create aggregations in SQL
+    conn.execute(text("""
+        CREATE TABLE agg_yearly AS
+        SELECT 
+            year,
+            COUNT(*) as total_births,
+            AVG(PESO) as avg_birth_weight
+        FROM fact_births
+        GROUP BY year
+    """))
 ```
 
 ---
@@ -233,28 +268,39 @@ dashboard/
 ├── app.py                    # Main application entry point
 ├── components/               # Reusable UI components
 │   ├── __init__.py
-│   ├── filters.py           # Filter controls (sliders, dropdowns)
 │   ├── cards.py             # Metric display cards
 │   ├── charts.py            # Chart generation functions
-│   └── maps.py              # Map visualization functions
+│   └── geo_charts.py        # Geographic visualizations
 ├── pages/                    # Multi-page app
 │   ├── __init__.py
 │   ├── home.py              # Landing page
-│   ├── timeline.py          # Temporal analysis
-│   ├── geographic.py        # Geographic analysis
-│   └── insights.py          # Deep-dive insights
-├── data/                     # Data processing
+│   ├── annual.py            # Annual analysis
+│   └── geographic.py        # Geographic analysis
+├── data/                     # Data processing & ETL
 │   ├── __init__.py
-│   ├── loader.py            # Data loading utilities
-│   ├── aggregator.py        # Pre-aggregation functions
-│   └── cache.py             # Caching mechanisms
+│   ├── database.py          # Database connections
+│   ├── loader.py            # Dashboard data loading (SQL queries)
+│   ├── staging.py           # Raw data ingestion from APIs
+│   ├── optimize.py          # Data type optimization
+│   ├── promote.py           # Staging → Production promotion
+│   ├── pandas/              # Pandas-based fallback scripts
+│   │   ├── optimize.py
+│   │   └── promote.py
+│   └── pipeline/            # SQL-based transformation pipeline
+│       ├── README.md        # Pipeline documentation
+│       ├── run_all.py       # Orchestrate all steps
+│       ├── step_01_select.py    # Select essential columns
+│       ├── step_02_create.py    # Create fact table
+│       ├── step_03_bin.py       # Create dimension tables
+│       ├── step_04_engineer.py  # Engineer features
+│       └── step_05_aggregate.py # Create aggregations
 ├── config/                   # Configuration
 │   ├── __init__.py
 │   ├── settings.py          # App settings
-│   └── constants.py         # Constants and mappings
+│   ├── constants.py         # Constants and mappings
+│   └── geographic.py        # Geographic data configurations
 └── assets/                   # Static files
-    ├── styles.css           # Custom CSS
-    └── favicon.ico          # App icon
+    └── styles.css           # Custom CSS
 ```
 
 ---
@@ -263,7 +309,7 @@ dashboard/
 
 ### Memory Constraints
 - **Target**: <512MB RAM usage (free tier hosting)
-- **Strategy**: Lazy loading, pagination, pre-aggregation
+- **Strategy**: Pre-aggregated database tables, SQL queries, no large DataFrames in memory
 - **Monitoring**: Profile memory usage during development
 
 ### Load Time Targets
@@ -273,18 +319,24 @@ dashboard/
 
 ### Optimization Techniques
 ```python
-# 1. Load only required columns
-columns_needed = ['DTNASC', 'IDADEMAE', 'PESO', 'GESTACAO']
-df = pd.read_parquet('data.parquet', columns=columns_needed)
+# 1. Use pre-aggregated tables (already computed in pipeline)
+# Dashboard queries agg_* tables, not fact_births (27M rows)
+df = data_loader.get_yearly_summary(year=2024)  # Small, pre-computed
 
-# 2. Use categorical dtypes
-df['state'] = df['state'].astype('category')
+# 2. Use SQL for filtering and aggregation
+from sqlalchemy import text
+with engine.connect() as conn:
+    df = pd.read_sql(text("""
+        SELECT year, state_code, total_births
+        FROM agg_state_yearly
+        WHERE year >= 2020
+    """), conn)
 
-# 3. Downsample for visualizations
-df_sample = df.sample(frac=0.1) if len(df) > 100000 else df
+# 3. Fact table (fact_births) stays in staging database
+# Production database only has dim_* and agg_* tables (<500MB)
 
-# 4. Pre-aggregate common queries
-monthly_aggregates = df.groupby(['year', 'month']).size().reset_index()
+# 4. Pipeline creates all aggregations in SQL (memory-efficient)
+# See: dashboard/data/pipeline/step_05_aggregate.py
 ```
 
 ---

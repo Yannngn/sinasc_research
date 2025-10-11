@@ -1,245 +1,222 @@
-# 📚 Database Pipeline Optimization - Documentation Index
+# 📚 SINASC Research Documentation Index
 
-## 📖 Complete Documentation Suite
+## 📖 Documentation Overview
 
-This directory contains comprehensive documentation for the optimized SINASC database pipeline.
-
----
-
-## 🎯 Start Here
-
-### **[PIPELINE_OPTIMIZATION_README.md](PIPELINE_OPTIMIZATION_README.md)** ⭐ **QUICK START**
-- 90-second quick start guide
-- Essential commands
-- FAQ
-- Links to detailed docs
-
-### **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)** 📊 **COMPREHENSIVE GUIDE**
-- Complete project overview
-- Performance metrics (before/after)
-- All commands with examples
-- Testing procedures
-- Success metrics
+This directory contains comprehensive documentation for the SINASC Research Dashboard and its ETL data pipeline.
 
 ---
 
-## 📋 Reference Documents
+## 🎯 Getting Started
 
-### **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** 🔖 **COMMAND CHEAT SHEET**
-- Common workflows (copy-paste ready)
-- Database status checks
-- Performance modes
-- Troubleshooting tips
-- Decision tree
+### **[QUICKSTART.md](QUICKSTART.md)** ⭐ **START HERE**
+- Complete setup instructions for local development
+- Database configuration with Docker
+- Step-by-step pipeline execution
+- Running the dashboard locally
 
-### **[PIPELINE_ARCHITECTURE_VISUAL.md](PIPELINE_ARCHITECTURE_VISUAL.md)** 🎨 **VISUAL DIAGRAMS**
-- Architecture overview
-- Data flow diagrams
-- Performance timeline charts
-- File relationships
-- Command flow visualization
+### **[README.md](../README.md)** 📊 **PROJECT OVERVIEW**
+- High-level project description
+- Key features and metrics
+- Quick start commands
+- Technology stack
 
 ---
 
-## 🔬 Technical Deep Dives
+## 📋 Core Documentation
 
-### **[DATA_PIPELINE_ANALYSIS.md](DATA_PIPELINE_ANALYSIS.md)** 🔍 **ANALYSIS & STRATEGY**
-- Complete pandas `to_sql` usage audit
-- Optimization opportunities identified
-- Performance impact estimates
-- Implementation priorities
-- Code examples (before/after)
+### Architecture & Design
 
-### **[PIPELINE_IMPROVEMENTS_SUMMARY.md](PIPELINE_IMPROVEMENTS_SUMMARY.md)** 📝 **FEATURE DOCUMENTATION**
-- Incremental ingestion implementation
-- Auto-optimization details
-- SQL promotion implementation
-- Migration guide
-- Testing procedures
-- Command reference
+#### **[ARCHITECTURE.md](ARCHITECTURE.md)** 🏗️
+- Three-tiered database architecture
+- Staging vs production environments
+- System design and data flow
 
-### **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)** ⚡ **SQL OPTIMIZATION**
-- SQL conversion techniques
-- Direct SQL examples
-- Performance comparisons
-- Integration with staging.py
-- Testing procedures
+#### **[STRUCTURE.md](STRUCTURE.md)** 📁
+- Project file organization
+- Directory structure
+- Module descriptions
+
+#### **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** 🎨
+- UI/UX design guidelines
+- Color schemes and typography
+- Component design patterns
+
+### Data Pipeline
+
+#### **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** ⚡
+- SQL-based pipeline architecture
+- 5-step transformation process
+- Memory-efficient implementation
+- Performance benchmarks
+
+#### **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** 🔄
+- Complete pipeline execution guide
+- Data refresh procedures
+- Troubleshooting common issues
+
+### Dashboard Features
+
+#### **[DASHBOARD_DATA_SUMMARY.md](DASHBOARD_DATA_SUMMARY.md)** 📊
+- Available metrics and indicators
+- Data aggregation levels
+- Dashboard page descriptions
+
+#### **[YEARLY_SUMMARY_VARIABLES.md](YEARLY_SUMMARY_VARIABLES.md)** 📈
+- Annual summary metrics
+- Data structure documentation
+- Variable definitions
+
+#### **[YEAR_CARDS_TABS_LAYOUT.md](YEAR_CARDS_TABS_LAYOUT.md)** 🗂️
+- Dashboard layout design
+- Component organization
+- User interface structure
+
+#### **[PIPELINE_GEOGRAPHIC_ENHANCEMENT.md](PIPELINE_GEOGRAPHIC_ENHANCEMENT.md)** 🗺️
+- Geographic analysis features
+- Regional data processing
+- Geospatial capabilities
+
+### Deployment & Operations
+
+#### **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** 🚀
+- Cloud deployment instructions
+- Environment configuration
+- Production setup (Render, Hugging Face Spaces)
+
+#### **[PRODUCTION_DATA_GRANULARITY.md](PRODUCTION_DATA_GRANULARITY.md)** 📉
+- Production database optimization
+- Data granularity decisions
+- Storage and performance trade-offs
+
+#### **[CODING_STANDARDS.md](CODING_STANDARDS.md)** 📝
+- Code style guidelines
+- Best practices
+- Development standards
+
+#### **[PYTHON_313_COMPATIBILITY.md](PYTHON_313_COMPATIBILITY.md)** 🐍
+- Python version compatibility
+- Dependency management
+- Known issues and workarounds
 
 ---
 
-## 📂 File Organization
+## 📂 Project Structure
 
 ```
 sinasc_research/
 │
-├─ PIPELINE_OPTIMIZATION_README.md     ⭐ START HERE (quick start)
-├─ COMPLETE_OPTIMIZATION_SUMMARY.md    📊 Full overview
-├─ PIPELINE_QUICK_REFERENCE.md         🔖 Command cheat sheet
-├─ PIPELINE_ARCHITECTURE_VISUAL.md     🎨 Visual diagrams
-├─ DATA_PIPELINE_ANALYSIS.md           🔍 Technical analysis
-├─ PIPELINE_IMPROVEMENTS_SUMMARY.md    📝 Feature docs
-├─ SQL_OPTIMIZATION_IMPLEMENTATION.md  ⚡ SQL optimization
+├── README.md                    # Main project documentation
+├── docs/                        # All documentation (this directory)
+│   ├── QUICKSTART.md           # ⭐ Start here for setup
+│   ├── ARCHITECTURE.md         # System architecture
+│   ├── DEPLOYMENT_GUIDE.md     # Deployment instructions
+│   └── ...
 │
-└─ dashboard/data/
-   ├─ staging.py           ✅ Enhanced (incremental + auto-optimize)
-   ├─ optimize_sql.py      🚀 NEW (SQL-based, 10x faster)
-   ├─ promote_sql.py       🚀 NEW (SQL-based, 10x faster)
-   ├─ optimize.py          ⚠️  Legacy (pandas fallback)
-   ├─ promote.py           ⚠️  Legacy (pandas fallback)
-   ├─ dimensions.py        ✅ Unchanged (small tables)
-   ├─ loader.py            ✅ Unchanged (dashboard queries)
-   └─ database.py          ✅ Unchanged (connections)
+├── dashboard/                   # Dashboard application
+│   ├── app.py                  # Main application entry point
+│   ├── pages/                  # Dashboard pages (home, annual, geographic)
+│   ├── components/             # Reusable UI components (cards, charts)
+│   ├── config/                 # Configuration and constants
+│   └── data/                   # Data pipeline and loading
+│       ├── staging.py          # Ingest raw data from APIs
+│       ├── optimize.py         # Optimize data types
+│       ├── promote.py          # Copy to production database
+│       ├── loader.py           # Dashboard data loading
+│       ├── database.py         # Database connections
+│       ├── pandas/             # Pandas-based fallback scripts
+│       └── pipeline/           # SQL-based pipeline (5 steps)
+│           ├── README.md       # Pipeline documentation
+│           ├── run_all.py      # Run complete pipeline
+│           ├── step_01_select.py
+│           ├── step_02_create.py
+│           ├── step_03_bin.py
+│           ├── step_04_engineer.py
+│           └── step_05_aggregate.py
+│
+├── deployment/                  # Deployment configuration
+│   ├── Dockerfile
+│   └── render.yaml
+│
+└── docker-compose.yml           # Local database setup
 ```
 
 ---
 
 ## 🎯 Reading Guide by Role
 
-### For Pipeline Users (Data Team)
-**Goal**: Run the pipeline efficiently
-1. **[PIPELINE_OPTIMIZATION_README.md](PIPELINE_OPTIMIZATION_README.md)** - Quick start
-2. **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** - Command reference
-3. **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)** - When you need details
+### For New Users (Getting Started)
+1. **[../README.md](../README.md)** - Project overview
+2. **[QUICKSTART.md](QUICKSTART.md)** - Setup and installation
+3. **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** - Run the pipeline
 
-### For Developers (Code Contributors)
-**Goal**: Understand implementation details
-1. **[DATA_PIPELINE_ANALYSIS.md](DATA_PIPELINE_ANALYSIS.md)** - Why changes were made
-2. **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)** - How SQL optimization works
-3. **[PIPELINE_IMPROVEMENTS_SUMMARY.md](PIPELINE_IMPROVEMENTS_SUMMARY.md)** - Feature implementation
+### For Data Engineers (Running the Pipeline)
+1. **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** - Pipeline architecture
+2. **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** - Execution guide
+3. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Database design
 
-### For System Architects
-**Goal**: Understand architecture and trade-offs
-1. **[PIPELINE_ARCHITECTURE_VISUAL.md](PIPELINE_ARCHITECTURE_VISUAL.md)** - System overview
-2. **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)** - Complete picture
-3. **[DATA_PIPELINE_ANALYSIS.md](DATA_PIPELINE_ANALYSIS.md)** - Technical decisions
+### For Developers (Contributing Code)
+1. **[STRUCTURE.md](STRUCTURE.md)** - Project organization
+2. **[CODING_STANDARDS.md](CODING_STANDARDS.md)** - Code guidelines
+3. **[ARCHITECTURE.md](ARCHITECTURE.md)** - System design
+4. **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** - UI guidelines
 
-### For New Team Members
-**Goal**: Get up to speed quickly
-1. **[PIPELINE_OPTIMIZATION_README.md](PIPELINE_OPTIMIZATION_README.md)** - Start here
-2. **[PIPELINE_ARCHITECTURE_VISUAL.md](PIPELINE_ARCHITECTURE_VISUAL.md)** - Visualize the system
-3. **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** - Daily commands
+### For DevOps (Deploying the Application)
+1. **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Deployment steps
+2. **[PRODUCTION_DATA_GRANULARITY.md](PRODUCTION_DATA_GRANULARITY.md)** - Production optimization
+3. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Infrastructure design
 
 ---
 
-## 🔍 Quick Navigation
+## 🚀 Common Workflows
 
-### By Topic
+### "I want to set up the project locally"
+1. Read **[QUICKSTART.md](QUICKSTART.md)**
+2. Follow the setup steps
+3. Run `docker-compose up -d` and `python -m dashboard.data.run_all`
 
-#### Commands & Usage
-- Quick start → **[PIPELINE_OPTIMIZATION_README.md](PIPELINE_OPTIMIZATION_README.md)**
-- Command reference → **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)**
-- Full examples → **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)**
+### "I want to add new SINASC data"
+1. Run `python dashboard/data/staging.py --years 2025`
+2. Run `python dashboard/data/pipeline/run_all.py`
+3. Run `python dashboard/data/promote.py --target local`
 
-#### Performance
-- Before/after comparison → **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)**
-- Performance timeline → **[PIPELINE_ARCHITECTURE_VISUAL.md](PIPELINE_ARCHITECTURE_VISUAL.md)**
-- SQL optimization → **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)**
+### "I want to understand the pipeline"
+1. Read **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)**
+2. Review pipeline step scripts
+3. Check **[REGENERATE_DASHBOARD_DATA.md](REGENERATE_DASHBOARD_DATA.md)** for usage
 
-#### Implementation
-- Feature details → **[PIPELINE_IMPROVEMENTS_SUMMARY.md](PIPELINE_IMPROVEMENTS_SUMMARY.md)**
-- SQL conversion → **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)**
-- Analysis & rationale → **[DATA_PIPELINE_ANALYSIS.md](DATA_PIPELINE_ANALYSIS.md)**
+### "I want to deploy to production"
+1. Read **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**
+2. Configure environment variables
+3. Follow cloud provider instructions
 
-#### Troubleshooting
-- Common issues → **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** (Troubleshooting section)
-- Testing → **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)** (Testing section)
-- Fallback modes → **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)**
-
----
-
-## 📊 Key Metrics
-
-### Performance Improvements
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **Total pipeline** | 2h 10min | 40 min | **3.25x faster** |
-| **Optimization step** | 60 min | 6 min | **10x faster** |
-| **Promotion step** | 40 min | 4 min | **10x faster** |
-| **Workflow commands** | 3 manual | 2 auto | **Simplified** |
-
-### Documentation Stats
-- **7 comprehensive documents** (total)
-- **3 new optimized Python scripts**
-- **~12,000 words** of documentation
-- **Multiple code examples** with before/after comparisons
-- **Visual diagrams** and architecture charts
-
----
-
-## 🎯 Document Purposes
-
-| Document | Purpose | Length | Target Audience |
-|----------|---------|--------|-----------------|
-| **PIPELINE_OPTIMIZATION_README.md** | Quick start guide | Short | All users |
-| **COMPLETE_OPTIMIZATION_SUMMARY.md** | Comprehensive overview | Long | All (reference) |
-| **PIPELINE_QUICK_REFERENCE.md** | Command cheat sheet | Medium | Daily users |
-| **PIPELINE_ARCHITECTURE_VISUAL.md** | Visual diagrams | Medium | Architects |
-| **DATA_PIPELINE_ANALYSIS.md** | Technical analysis | Long | Developers |
-| **PIPELINE_IMPROVEMENTS_SUMMARY.md** | Feature documentation | Long | Developers |
-| **SQL_OPTIMIZATION_IMPLEMENTATION.md** | SQL optimization guide | Long | Developers |
-
----
-
-## 🚀 Common Workflows → Document Mapping
-
-### "I want to add SINASC 2025 data"
-1. **[PIPELINE_OPTIMIZATION_README.md](PIPELINE_OPTIMIZATION_README.md)** - See "Quick Start" section
-2. Run: `python dashboard/data/staging.py --years 2025`
-
-### "I need to understand what changed"
-1. **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)** - See "What Was Accomplished" section
-
-### "I need a specific command"
-1. **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** - See "Common Workflows" section
-
-### "How does the pipeline work?"
-1. **[PIPELINE_ARCHITECTURE_VISUAL.md](PIPELINE_ARCHITECTURE_VISUAL.md)** - See "Architecture Overview"
-
-### "Why was this approach chosen?"
-1. **[DATA_PIPELINE_ANALYSIS.md](DATA_PIPELINE_ANALYSIS.md)** - See analysis sections
-
-### "How do I implement SQL optimization?"
-1. **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)** - See implementation details
-
-### "Something went wrong, need help"
-1. **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** - See "Troubleshooting" section
-2. **[COMPLETE_OPTIMIZATION_SUMMARY.md](COMPLETE_OPTIMIZATION_SUMMARY.md)** - See "Testing & Verification"
+### "I want to contribute code"
+1. Review **[CODING_STANDARDS.md](CODING_STANDARDS.md)**
+2. Understand **[STRUCTURE.md](STRUCTURE.md)**
+3. Follow **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** for UI changes
 
 ---
 
 ## 📝 Document Update History
 
-| Date | Document | Change |
-|------|----------|--------|
-| 2025-10-07 | All | Initial creation - complete pipeline optimization |
+| Date | Change |
+|------|--------|
+| 2025-10-11 | Documentation cleanup - removed temporary completion reports and outdated references |
+| Previous | Various feature documentation and implementation guides |
 
 ---
 
-## ✅ Documentation Checklist
+## ✅ Available Documentation
 
-- ✅ Quick start guide (90 seconds to first command)
-- ✅ Comprehensive overview (complete project summary)
-- ✅ Command reference (copy-paste ready examples)
-- ✅ Visual diagrams (architecture and data flow)
-- ✅ Technical analysis (pandas/SQL usage audit)
-- ✅ Feature documentation (implementation details)
-- ✅ SQL optimization guide (performance techniques)
-- ✅ Testing procedures (verification steps)
-- ✅ Troubleshooting section (common issues)
-- ✅ Migration guide (how to adopt new workflow)
-- ✅ Backward compatibility notes (fallback modes)
-- ✅ Code examples (before/after comparisons)
+Core documentation:
+- ✅ Quick start guide (QUICKSTART.md)
+- ✅ Project overview (README.md)
+- ✅ Architecture documentation (ARCHITECTURE.md)
+- ✅ Pipeline documentation (pipeline/README.md)
+- ✅ Deployment guide (DEPLOYMENT_GUIDE.md)
+- ✅ Code standards (CODING_STANDARDS.md)
+- ✅ Design system (DESIGN_SYSTEM.md)
+- ✅ Data structure docs (YEARLY_SUMMARY_VARIABLES.md, DASHBOARD_DATA_SUMMARY.md)
 
 ---
 
-## 🎉 Success!
-
-**Complete documentation suite** for the optimized SINASC database pipeline:
-- 📚 7 comprehensive documents
-- 🚀 3 optimized Python scripts
-- ⚡ 4x performance improvement
-- 📊 Visual architecture diagrams
-- 🧪 Testing procedures
-- 🔖 Quick reference guides
-
-**Everything you need to run the pipeline efficiently!** ✨
+**Ready to explore Brazilian perinatal health data!** 🚀
