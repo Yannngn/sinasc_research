@@ -464,6 +464,13 @@ class DataLoader:
 
 # Global data loader instance
 # Uses staging DB if PROD_POSTGRES_INTERNAL_DATABASE_URL is not set
-_use_staging = os.getenv("PROD_LOCAL_DATABASE_URL") is None
-_use_local = os.getenv("PROD_POSTGRES_INTERNAL_DATABASE_URL") is not None
+try:
+    _use_staging = os.getenv("PROD_LOCAL_DATABASE_URL") is None
+except ValueError:
+    _use_staging = False
+try:
+    _use_local = os.getenv("PROD_POSTGRES_INTERNAL_DATABASE_URL") is not None
+except ValueError:
+    _use_local = False
+
 data_loader = DataLoader(use_staging=_use_staging, use_local=_use_local)
