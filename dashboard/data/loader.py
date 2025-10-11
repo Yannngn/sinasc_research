@@ -29,15 +29,22 @@ class DataLoader:
     Loads data directly from PostgreSQL aggregate tables instead of Parquet files.
     """
 
-    def __init__(self, use_staging: bool = False, use_local: bool = False):
+    def __init__(self, use_staging: bool = False, use_local: bool = True, use_onrender: bool = False):
         """
         Initialize data loader.
 
         Args:
             use_staging: If True, connect to staging DB; otherwise production DB
             use_local: If True, connect to local DB; otherwise remote DB
+            use_onrender: If True, connect to OnRender DB; otherwise remote DB
         """
-        self.engine = get_staging_db_engine() if use_staging else (get_prod_db_engine() if not use_local else get_local_db_engine())
+        if use_onrender:
+            self.engine = get_prod_db_engine()
+        elif use_local:
+            self.engine = get_local_db_engine()
+        else:
+            self.engine = get_staging_db_engine()
+
         self.metadata = self._load_metadata_from_db()
         self.available_years = self.metadata.get("years", [])
 
@@ -462,15 +469,17 @@ class DataLoader:
             return {}
 
 
-# Global data loader instance
-# Uses staging DB if PROD_POSTGRES_INTERNAL_DATABASE_URL is not set
 try:
-    _use_staging = os.getenv("PROD_LOCAL_DATABASE_URL") is None
+    _use_onrender = os.getenv("PROD_POSTGRES_INTERNAL_DATABASE_URL") is not None
 except ValueError:
-    _use_staging = False
+    _use_onrender = False
 try:
-    _use_local = os.getenv("PROD_POSTGRES_INTERNAL_DATABASE_URL") is not None
+    _use_local = os.getenv("PROD_LOCAL_DATABASE_URL") is None
 except ValueError:
     _use_local = False
+try:
+    _use_staging = os.getenv("STAGING_DATABASE_URL") is not None
+except ValueError:
+    _use_staging = False
 
-data_loader = DataLoader(use_staging=_use_staging, use_local=_use_local)
+data_loader = DataLoader(use_staging=_use_staging, use_local=_use_local, use_onrender=_use_onrender)

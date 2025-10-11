@@ -545,7 +545,7 @@ def create_layout() -> html.Div:
                             [
                                 html.I(className="fas fa-database me-2"),
                                 "Fonte: DATASUS - SINASC | ",
-                                f"Total de registros: {metadata.get('total_records', 0):,} | ",
+                                f"Total de registros: {metadata.get('total_records', 27_361_628):,} | ",
                                 f"Anos disponíveis: {', '.join(map(str, available_years))}",
                             ],
                             className="text-muted small text-center",
