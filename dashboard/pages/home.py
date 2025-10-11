@@ -725,14 +725,15 @@ def register_callbacks(app):
     def update_births_evolution(selected_type):
         """Update births evolution chart based on selected year and type."""
         df = data_loader.load_yearly_aggregates()
-        y_col = "total_births"
+        if "births_per_1k" not in df.columns:
+            df["births_per_1k"] = df["total_births"].mul(1000 / 190_755_799).round(2)
 
         if selected_type == "absolute":
             y_title = "Número de Nascimentos"
+            y_col = "total_births"
         else:
             y_title = "Nascimentos por 1.000 Habitantes"
-
-            df[y_col] = df[y_col].mul(1000 / 190_755_799).round(2)
+            y_col = "births_per_1k"
 
         return create_simple_bar_chart(
             df=df,
