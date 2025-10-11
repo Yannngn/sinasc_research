@@ -48,6 +48,16 @@ COLOR_PALETTE = {
     "gray_dark": "#616161",  # Dark gray for text
 }
 
+COLOR_CONTINUOS_PALLETTE = {
+    "primary": "Viridis",
+    "secondary": "YlOrRd",
+    "success": "Greens",
+    "danger": "Reds",
+    "warning": "Oranges",
+    "info": "Blues",
+}
+
+
 # Delivery type colors
 DELIVERY_COLORS = {
     "Vaginal": COLOR_PALETTE["primary"],

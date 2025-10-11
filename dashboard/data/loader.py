@@ -73,6 +73,7 @@ class DataLoader:
                         "adolescent_pregnancy_pct": float(row["adolescent_pregnancy_pct"]),
                         "very_young_pregnancy_pct": float(row["very_young_pregnancy_pct"]),
                         "preterm_pct": float(row["preterm_pct"]),
+                        "extreme_preterm_pct": float(row["extreme_preterm_pct"]),
                     },
                     "delivery_type": {
                         "cesarean_pct": float(row["cesarean_pct"]),
@@ -174,28 +175,6 @@ class DataLoader:
         df["month_label"] = df["month"].apply(lambda x: MONTH_NAMES[x - 1])
 
         # Add _count columns computed from _pct columns (dashboard expects these)
-        df = self._add_count_columns(df)
-
-        return df
-
-    @lru_cache(maxsize=10)
-    def load_state_aggregates(self, year: int) -> pd.DataFrame:
-        """
-        Load state aggregates for a specific year from database.
-
-        Args:
-            year: Year to load
-
-        Returns:
-            DataFrame with state aggregates
-        """
-        query = "SELECT * FROM agg_state_yearly WHERE year = %(year)s ORDER BY state_code"
-        df = pd.read_sql(query, self.engine, params={"year": year})
-
-        if df.empty:
-            raise ValueError(f"No state aggregates found for year {year}")
-
-        # Add _count columns computed from _pct columns
         df = self._add_count_columns(df)
 
         return df
@@ -324,9 +303,9 @@ class DataLoader:
         return summary.get("date_range", {})
 
     @lru_cache(maxsize=10)
-    def load_population_data(self, year: None | int = None) -> pd.DataFrame:
+    def load_population_data(self, level: str = "states") -> pd.DataFrame:
         """
-        Load population estimates by state.
+        Load population estimates by state from the database.
 
         Args:
             year: Optional year to filter (loads all years if None)
@@ -334,14 +313,21 @@ class DataLoader:
         Returns:
             DataFrame with columns: state_code, state_name, year, population
         """
-        csv_path = IBGE_DATA_DIR / "state_population_estimates.csv"
-        if not csv_path.exists():
-            raise FileNotFoundError(f"Population data not found: {csv_path}. Run scripts/fetch_geo_data.py first.")
+        if level == "regions":
+            query = f"SELECT id as region_code, name as region_name, count as population FROM dim_ibge_population_{level}"
 
-        df = pd.read_csv(csv_path)
+        elif level == "states":
+            query = f"SELECT id as state_code, name as state_name, count as population FROM dim_ibge_population_{level}"
 
-        if year is not None:
-            df = df[df["year"] == year].copy()
+        elif level == "municipalities":
+            query = f"SELECT id as municipality_code, name as municipality_name, count as population FROM dim_ibge_population_{level}"
+        else:
+            raise ValueError(f"Invalid level '{level}'. Must be one of: 'regions', 'states', 'municipalities'.")
+
+        df = pd.read_sql(query, self.engine)
+
+        if df.empty:
+            raise ValueError("No population data found.")
 
         return df
 
@@ -357,17 +343,21 @@ class DataLoader:
             DataFrame with state aggregates + population column
         """
         # Load state aggregates
-        state_df = self.load_state_aggregates(year)
+        state_df = self.load_yearly_state_aggregates(year)
 
         # Load population data
-        pop_df = self.load_population_data(year)
+        pop_df = self.load_population_data("states")
+
+        # Ensure 'state_code' columns have the same data type
+        state_df["state_code"] = state_df["state_code"].astype(str)
+        pop_df["state_code"] = pop_df["state_code"].astype(str)
 
         # Merge on state_code
         merged_df = state_df.merge(pop_df[["state_code", "population"]], on="state_code", how="left")
 
-        # Calculate per-capita rates (births per 10,000 population)
+        # Calculate per-capita rates (births per 1,000 population)
         if "total_births" in merged_df.columns:
-            merged_df["births_per_10k"] = (merged_df["total_births"] / merged_df["population"]) * 10000
+            merged_df["births_per_1k"] = (merged_df["total_births"] / merged_df["population"]) * 1000
 
         return merged_df
 

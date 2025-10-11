@@ -33,7 +33,7 @@ def create_simple_bar_chart(
     color: str = "primary",
 ) -> go.Figure:
     """
-    Create a simple bar chart with formatted text labels.
+    Create a simple bar chart with formatted text labels and Brazilian-style hover.
 
     Args:
         df: DataFrame with data
@@ -42,24 +42,26 @@ def create_simple_bar_chart(
         x_title: X-axis title
         y_title: Y-axis title
         color: Color key from COLOR_PALETTE
-        show_text: Whether to show value labels on bars
-        text_inside: Whether to position text inside bars
 
     Returns:
         Plotly Figure object
     """
     fig = go.Figure()
 
-    text_values = [format_brazilian_number(val) for val in df[y_col]]
+    # Formatted values for bar text and hover (Brazilian style: dots thousands, comma decimals)
+    formatted_values = [format_brazilian_number(val) for val in df[y_col]]
 
     fig.add_trace(
         go.Bar(
             x=df[x_col],
             y=df[y_col],
-            text=text_values,
+            text=formatted_values,
             textposition="inside",
             marker_color=COLOR_PALETTE[color],
             textfont=dict(size=12, color="white"),
+            # Provide the formatted string to hover via customdata and use a hovertemplate
+            customdata=formatted_values,
+            hovertemplate=f"<b>%{{x}}</b><br>{y_title}: %{{customdata}}<extra></extra>",
         )
     )
 
@@ -142,9 +144,8 @@ def create_line_chart(
         fig.add_hline(
             y=reference_line.get("y"),
             line_dash="dash",
-            line_color=COLOR_PALETTE.get(reference_line.get("color", "neutral")),
+            line_color=COLOR_PALETTE.get(reference_line.get("color", "danger")),
             annotation_text=reference_line.get("text", ""),
-            annotation_position="right",
         )
 
     return fig

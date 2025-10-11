@@ -4,7 +4,7 @@ from dash import html
 
 def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
     """
-    Create a card summarizing a specific year's statistics.
+    Create a responsive card summarizing a specific year's statistics with improved layout.
 
     Args:
         year: Year number
@@ -23,141 +23,102 @@ def create_year_summary_card(year: int, summary: dict) -> dbc.Card:
     low_apgar5_rate = summary.get("health_indicators", {}).get("low_apgar5_pct", 0)
     cesarean_rate = summary.get("delivery_type", {}).get("cesarean_pct", 0)
     preterm_rate = summary.get("pregnancy", {}).get("preterm_pct", 0)
-    hospital_rate = summary.get("location", {}).get("hospital_birth_pct", 0)
 
     return dbc.Card(
         [
             dbc.CardHeader(
                 html.Div(
                     [
-                        html.I(className="fas fa-calendar fa-2x text-white mb-2 px-2"),
-                        html.H3(f"{year}", className="mb-0 text-center text-white fw-bold"),
+                        # html.I(className="fas fa-calendar fa-2x text-secondary px-2 mb-0"),
+                        html.P(f"{year}", className="text-secondary mb-0"),  # fw-bold
                     ],
-                    className="d-flex align-items-center justify-content-center",
+                    className="d-flex align-items-center",
                 ),
-                className="bg-primary text-center  mb-3 pb-3 border-bottom",
+                className="p-2 bg-light text-start border-bottom",
             ),
             dbc.CardBody(
                 [
-                    # Total births - destacado
-                    html.Div(
-                        [
-                            html.I(className="fas fa-baby fa-2x text-primary mb-2"),
-                            html.H3(formatted_births, className="text-primary fw-bold mb-1"),
-                            html.P("Nascimentos Totais", className="text-muted mb-0 small"),
-                        ],
-                        className="text-center mb-3 pb-3 border-bottom",
-                    ),
-                    # Metrics in two columns - Quality indicators prioritized
+                    # Total births - primary metric on the left
                     dbc.Row(
                         [
-                            # Left column - Health quality indicators
                             dbc.Col(
-                                [
-                                    # Low birth weight rate
-                                    html.Div(
-                                        [
-                                            html.I(
-                                                className="fas fa-weight-hanging text-warning me-1",
-                                                style={"fontSize": "14px"},
-                                            ),
-                                            html.Strong("Baixo Peso: ", className="small"),
-                                            html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(
-                                                f"{low_birth_weight_rate:.1f}%".replace(".", ","),
-                                                className="small text-muted",
-                                            ),
-                                        ],
-                                        className="mb-2 d-flex align-items-center",
-                                    ),
-                                    # Adolescent pregnancy rate
-                                    html.Div(
-                                        [
-                                            html.I(
-                                                className="fas fa-user-friends text-info me-1",
-                                                style={"fontSize": "14px"},
-                                            ),
-                                            html.Strong("Adolescentes: ", className="small"),
-                                            html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(
-                                                f"{adolescent_pregnancy_rate:.1f}%".replace(".", ","),
-                                                className="small text-muted",
-                                            ),
-                                        ],
-                                        className="mb-2 d-flex align-items-center",
-                                    ),
-                                    # Low APGAR5 rate
-                                    html.Div(
-                                        [
-                                            html.I(
-                                                className="fas fa-heartbeat text-danger me-1",
-                                                style={"fontSize": "14px"},
-                                            ),
-                                            html.Strong("APGAR5 Baixo: ", className="small"),
-                                            html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(
-                                                f"{low_apgar5_rate:.1f}%".replace(".", ","),
-                                                className="small text-muted",
-                                            ),
-                                        ],
-                                        className="mb-0 d-flex align-items-center",
-                                    ),
-                                ],
-                                width=6,
+                                html.Div(
+                                    [
+                                        html.P("Nascimentos Totais", className="text-muted mb-0"),
+                                        html.H2(formatted_births, className="text-primary fw-bold mb-1"),
+                                    ],
+                                    className="text-start",
+                                ),
+                                xs=12,
+                                sm=12,
+                                md=7,
+                                lg=7,
+                                xl=7,
                             ),
-                            # Right column - Process and coverage indicators
+                            # Cesarean and Preterm rates - secondary metrics on the right
                             dbc.Col(
                                 [
-                                    # Cesarean rate
                                     html.Div(
                                         [
-                                            html.I(
-                                                className="fas fa-procedures text-warning me-1",
-                                                style={"fontSize": "14px"},
-                                            ),
-                                            html.Strong("Cesárea: ", className="small"),
-                                            html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(
-                                                f"{cesarean_rate:.1f}%".replace(".", ","),
-                                                className="small text-muted",
-                                            ),
+                                            html.P("Cesáreas", className="text-muted mb-0 me-1"),
+                                            html.H5(f"{cesarean_rate:.1f}%".replace(".", ","), className="text-warning fw-bold mb-0"),
                                         ],
-                                        className="mb-2 d-flex align-items-center",
+                                        className="d-flex align-items-center justify-content-between mb-2",
                                     ),
-                                    # Preterm rate
                                     html.Div(
                                         [
-                                            html.I(
-                                                className="fas fa-exclamation-triangle text-danger me-1",
-                                                style={"fontSize": "14px"},
-                                            ),
-                                            html.Strong("Prematuros: ", className="small"),
-                                            html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(
-                                                f"{preterm_rate:.1f}%".replace(".", ","),
-                                                className="small text-muted",
-                                            ),
+                                            html.P("Prematuros", className="text-muted mb-0 me-1"),
+                                            html.H5(f"{preterm_rate:.1f}%".replace(".", ","), className="text-danger fw-bold mb-0"),
                                         ],
-                                        className="mb-2 d-flex align-items-center",
-                                    ),
-                                    # Hospital births
-                                    html.Div(
-                                        [
-                                            html.I(
-                                                className="fas fa-hospital text-primary me-1",
-                                                style={"fontSize": "14px"},
-                                            ),
-                                            html.Strong("Hospitalar: ", className="small"),
-                                            html.Span("_", className="text-white"),  # Spacer
-                                            html.Span(
-                                                f"{hospital_rate:.1f}%".replace(".", ","),
-                                                className="small text-muted",
-                                            ),
-                                        ],
-                                        className="mb-0 d-flex align-items-center",
+                                        className="d-flex align-items-center justify-content-between",
                                     ),
                                 ],
-                                width=6,
+                                xs=12,
+                                sm=12,
+                                md=5,
+                                lg=5,
+                                xl=5,
+                            ),
+                        ],
+                        className="mb-3",
+                    ),
+                    # Less important metrics at the bottom
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    html.P("Baixo Peso", className="text-muted my-1 text-center"),
+                                    html.P(f"{low_birth_weight_rate:.1f}%".replace(".", ","), className="text-muted fw-bold my-1 text-center"),
+                                ],
+                                xs=6,
+                                sm=4,
+                                md=4,
+                                lg=4,
+                                xl=4,
+                            ),
+                            dbc.Col(
+                                [
+                                    html.P("Adolescentes", className="text-muted my-1 text-center"),
+                                    html.P(
+                                        f"{adolescent_pregnancy_rate:.1f}%".replace(".", ","), className="text-muted fw-bold my-1 text-center"
+                                    ),
+                                ],
+                                xs=6,
+                                sm=4,
+                                md=4,
+                                lg=4,
+                                xl=4,
+                            ),
+                            dbc.Col(
+                                [
+                                    html.P("APGAR5 Baixo", className="text-muted my-1 text-center"),
+                                    html.P(f"{low_apgar5_rate:.1f}%".replace(".", ","), className="text-muted fw-bold my-1 text-center"),
+                                ],
+                                xs=12,
+                                sm=4,
+                                md=4,
+                                lg=4,
+                                xl=4,
                             ),
                         ],
                         className="g-2",

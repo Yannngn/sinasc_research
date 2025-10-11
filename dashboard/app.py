@@ -36,25 +36,34 @@ app = Dash(
 
 # Expose server for deployment
 server = app.server
+# Use Bootstrap utility classes instead of Tailwind-style string
+navbar_item = "d-flex align-items-center gap-2 text-white text-decoration-none"
 
 # Navigation bar
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink("Início", href="/", active="exact")),
-        dbc.NavItem(dbc.NavLink("Análise Anual", href="/annual", active="exact")),
-        dbc.NavItem(dbc.NavLink("Temporal", href="/timeline", active="exact")),
-        dbc.NavItem(dbc.NavLink("Geográfico", href="/geographic", active="exact")),
-        dbc.NavItem(dbc.NavLink("Insights", href="/insights", active="exact")),
+        dbc.NavItem(dbc.NavLink("Início", href="/", active="exact", className=navbar_item)),
+        dbc.NavItem(dbc.NavLink("Anual", href="/annual", active="exact", className=navbar_item)),
+        dbc.NavItem(dbc.NavLink("Estados", href="/states", active="exact", className=navbar_item)),
+        dbc.NavItem(dbc.NavLink("Municípios", href="/cities", active="exact", className=navbar_item)),
+        dbc.NavItem(dbc.NavLink("Estabelecimentos", href="/facilities", active="exact", className=navbar_item)),
     ],
     brand="SINASC Dashboard",
     brand_href="/",
     color="primary",
     dark=True,
-    className="mb-3",
+    className="container-fluid mb-3",
 )
 
+
 # App layout
-app.layout = html.Div([dcc.Location(id="url", refresh=False), navbar, html.Div(id="page-content")])
+app.layout = html.Div(
+    [
+        dcc.Location(id="url", refresh=False),
+        navbar,
+        html.Div(id="page-content"),
+    ]
+)
 
 
 # Register callbacks from pages
@@ -79,7 +88,7 @@ def display_page(pathname):
             ],
             className="container",
         )
-    elif pathname == "/geographic":
+    elif pathname == "/states":
         return geographic.layout
     elif pathname == "/insights":
         return html.Div(
