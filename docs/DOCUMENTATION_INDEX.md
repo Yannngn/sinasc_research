@@ -22,74 +22,79 @@ This directory contains comprehensive documentation for the SINASC Research Dash
 
 ---
 
-## 📋 Core Documentation
+## 📋 Reference Documents
 
-### Architecture & Design
+### **[PIPELINE_QUICK_REFERENCE.md](PIPELINE_QUICK_REFERENCE.md)** 🔖 **COMMAND CHEAT SHEET**
+- Common workflows (copy-paste ready)
+- Database status checks
+- Performance modes
+- Troubleshooting tips
+- Decision tree
 
-#### **[ARCHITECTURE.md](ARCHITECTURE.md)** 🏗️
-- Three-tiered database architecture
-- Staging vs production environments
-- System design and data flow
+### **[PIPELINE_ARCHITECTURE_VISUAL.md](PIPELINE_ARCHITECTURE_VISUAL.md)** 🎨 **VISUAL DIAGRAMS**
+- Architecture overview
+- Data flow diagrams
+- Performance timeline charts
+- File relationships
+- Command flow visualization
 
-#### **[STRUCTURE.md](STRUCTURE.md)** 📁
-- Project file organization
-- Directory structure
-- Module descriptions
+---
 
-#### **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** 🎨
-- UI/UX design guidelines
-- Color schemes and typography
-- Component design patterns
+## 🔬 Technical Deep Dives
 
-### Data Pipeline
+### **[DATA_PIPELINE_ANALYSIS.md](DATA_PIPELINE_ANALYSIS.md)** 🔍 **ANALYSIS & STRATEGY**
+- Complete pandas `to_sql` usage audit
+- Optimization opportunities identified
+- Performance impact estimates
+- Implementation priorities
+- Code examples (before/after)
 
-#### **[dashboard/data/pipeline/README.md](../dashboard/data/pipeline/README.md)** ⚡
-- SQL-based pipeline architecture
-- 5-step transformation process
-- Memory-efficient implementation
-- Performance benchmarks
-- Complete pipeline execution guide
+### **[PIPELINE_IMPROVEMENTS_SUMMARY.md](PIPELINE_IMPROVEMENTS_SUMMARY.md)** 📝 **FEATURE DOCUMENTATION**
+- Incremental ingestion implementation
+- Auto-optimization details
+- SQL promotion implementation
+- Migration guide
+- Testing procedures
+- Command reference
 
-### Dashboard Features
+### **[SQL_OPTIMIZATION_IMPLEMENTATION.md](SQL_OPTIMIZATION_IMPLEMENTATION.md)** ⚡ **SQL OPTIMIZATION**
+- SQL conversion techniques
+- Direct SQL examples
+- Performance comparisons
+- Integration with staging.py
+- Testing procedures
 
+---
 
+## 🗺️ Geographic Analysis & Dashboard
 
-#### **[YEARLY_SUMMARY_VARIABLES.md](YEARLY_SUMMARY_VARIABLES.md)** 📈
-- Annual summary metrics
-- Data structure documentation
-- Variable definitions
+### **[GEOGRAPHIC_PLANNING.md](GEOGRAPHIC_PLANNING.md)** 📍 **PLANNING DOCUMENT**
+- Geographic page architecture
+- State and municipal level design
+- Data requirements
+- Implementation phases
 
-#### **[YEAR_CARDS_TABS_LAYOUT.md](YEAR_CARDS_TABS_LAYOUT.md)** 🗂️
-- Dashboard layout design
-- Component organization
-- User interface structure
+### **[GEOGRAPHIC_IMPLEMENTATION.md](GEOGRAPHIC_IMPLEMENTATION.md)** 🏗️ **STATE-LEVEL PAGE**
+- State-level analysis implementation
+- Choropleth maps with GeoJSON
+- Regional comparisons
+- Metric calculations
 
-#### **[PIPELINE_GEOGRAPHIC_ENHANCEMENT.md](PIPELINE_GEOGRAPHIC_ENHANCEMENT.md)** 🗺️
-- Geographic analysis features
-- Regional data processing
-- Geospatial capabilities
+### **[MUNICIPAL_LEVEL_ENHANCEMENT.md](MUNICIPAL_LEVEL_ENHANCEMENT.md)** 🏘️ **MUNICIPAL-LEVEL PAGE** ⭐ **NEW**
+- State-filtered municipality loading
+- Smart top/bottom N rankings
+- Municipal choropleth maps
+- Performance optimizations (10x faster)
+- Database-level filtering
+- User controls and UX
 
-### Deployment & Operations
-
-#### **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** 🚀
-- Cloud deployment instructions
-- Environment configuration
-- Production setup (Render, Hugging Face Spaces)
-
-#### **[PRODUCTION_DATA_GRANULARITY.md](PRODUCTION_DATA_GRANULARITY.md)** 📉
-- Production database optimization
-- Data granularity decisions
-- Storage and performance trade-offs
-
-#### **[CODING_STANDARDS.md](CODING_STANDARDS.md)** 📝
-- Code style guidelines
-- Best practices
-- Development standards
-
-#### **[PYTHON_313_COMPATIBILITY.md](PYTHON_313_COMPATIBILITY.md)** 🐍
-- Python version compatibility
-- Dependency management
-- Known issues and workarounds
+### **[DRY_REFACTORING_SUMMARY.md](DRY_REFACTORING_SUMMARY.md)** ♻️ **CODE REFACTORING** ⭐ **NEW**
+- Shared component extraction
+- Eliminated code duplication
+- Municipal page reduced by 19%
+- Reusable formatting, charts, and maps
+- Improved maintainability
+- Future development guidelines
 
 ---
 

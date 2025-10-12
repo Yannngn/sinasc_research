@@ -48,7 +48,7 @@ COLOR_PALETTE = {
     "gray_dark": "#616161",  # Dark gray for text
 }
 
-COLOR_CONTINUOS_PALLETTE = {
+COLOR_CONTINUOS_PALETTE = {
     "primary": "Viridis",
     "secondary": "YlOrRd",
     "success": "Greens",

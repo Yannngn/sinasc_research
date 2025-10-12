@@ -2,7 +2,7 @@ from typing import Any
 
 import pandas as pd
 import plotly.express as px
-from config.geographic import get_state_from_id_code
+from config.geographic import get_region_from_id_code, get_state_from_id_code
 
 _original_px_choropleth = px.choropleth
 
@@ -94,7 +94,9 @@ def _wrapped_choropleth(*args, **kwargs):
 px.choropleth = _wrapped_choropleth
 
 
-def create_choropleth_chart(df: pd.DataFrame, geojson, indicator: str, color: str, title: str | None = None, color_scale: str = "Viridis"):
+def create_choropleth_chart(
+    df: pd.DataFrame, geojson: dict, indicator: str, color: str, title: str | None = None, color_scale: str = "Viridis"
+):
     """
     Create a generic choropleth chart.
 
@@ -145,4 +147,61 @@ def create_choropleth_chart(df: pd.DataFrame, geojson, indicator: str, color: st
         ),
     )
 
+    return fig
+
+
+def create_state_scatter_plot(df: pd.DataFrame, indicator: str, indicator_label: str) -> Any:
+    """
+    Create a scatter plot of total births vs indicator by state.
+
+    Args:
+        df: DataFrame with state data including state_abbr, region_name, total_births
+        indicator: Column name for y-axis
+        indicator_label: Human-readable label for y-axis
+
+    Returns:
+        Plotly Figure object
+    """
+    from config.constants import BRAZILIAN_STATES
+    from config.geographic import get_state_from_id_code
+
+    df = df.copy()
+    df["state_name"] = df["state_code"].apply(get_state_from_id_code)
+    df["region_name"] = df["state_code"].apply(get_region_from_id_code)
+    df["state_abbr"] = df["state_code"].apply(lambda x: BRAZILIAN_STATES.get(x, {}).get("abbr", ""))
+
+    x_col = "total_births" if "_count" in indicator else "births_per_1k"
+    y_col = indicator
+    fig = px.scatter(
+        df,
+        x=x_col,
+        y=y_col,
+        size="total_births",
+        color="region_name",
+        text="state_abbr",
+        hover_name="state_name",
+        custom_data=["total_births", y_col],
+        size_max=50,
+        color_discrete_sequence=px.colors.qualitative.Set2,
+    )
+
+    # Keep hover showing only x (per 1k), y (indicator) and size (total births) with clearer labels
+    hovertemplate = (
+        "<b>%{hovertext}</b><br>"
+        "Nascimentos por 1.000 habitantes: %{x:.1f}<br>"
+        f"{indicator_label}:"
+        "%{customdata[1]:.2f}<br>"
+        "Total nascimentos: %{customdata[0]:,}<extra></extra>"
+    )
+    fig.update_traces(hovertemplate=hovertemplate)
+    fig.update_traces(textposition="top center", textfont=dict(size=10))
+    fig.update_layout(
+        template="plotly_white",
+        xaxis_title="Nascimentos por 1.000 habitantes",
+        yaxis_title=indicator_label,
+        showlegend=True,
+        legend=dict(title="Região", orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=60, r=40, t=50, b=40),
+        font=dict(family="Inter, sans-serif"),
+    )
     return fig

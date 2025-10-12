@@ -11,7 +11,7 @@ License: MIT
 import dash_bootstrap_components as dbc
 from config.settings import DEBUG, HOST, PORT
 from dash import Dash, Input, Output, dcc, html
-from pages import annual, geographic, home
+from pages import annual, home, municipal_level, state_level
 
 # Initialize the Dash app with modern theme and custom styles
 app = Dash(
@@ -44,9 +44,8 @@ navbar = dbc.NavbarSimple(
     children=[
         dbc.NavItem(dbc.NavLink("Início", href="/", active="exact", className=navbar_item)),
         dbc.NavItem(dbc.NavLink("Anual", href="/annual", active="exact", className=navbar_item)),
-        dbc.NavItem(dbc.NavLink("Estados", href="/states", active="exact", className=navbar_item)),
-        dbc.NavItem(dbc.NavLink("Municípios", href="/cities", active="exact", className=navbar_item)),
-        dbc.NavItem(dbc.NavLink("Estabelecimentos", href="/facilities", active="exact", className=navbar_item)),
+        dbc.NavItem(dbc.NavLink("Estados", href="/state-level", active="exact", className=navbar_item)),
+        dbc.NavItem(dbc.NavLink("Municípios", href="/municipal-level", active="exact", className=navbar_item)),
     ],
     brand="SINASC Dashboard",
     brand_href="/",
@@ -69,7 +68,8 @@ app.layout = html.Div(
 # Register callbacks from pages
 home.register_callbacks(app)
 annual.register_callbacks(app)
-geographic.register_callbacks(app)
+state_level.register_callbacks(app)
+municipal_level.register_callbacks(app)
 
 
 # Routing callback
@@ -88,8 +88,10 @@ def display_page(pathname):
             ],
             className="container",
         )
-    elif pathname == "/states":
-        return geographic.layout
+    elif pathname == "/state-level":
+        return state_level.layout
+    elif pathname == "/municipal-level":
+        return municipal_level.layout
     elif pathname == "/insights":
         return html.Div(
             [

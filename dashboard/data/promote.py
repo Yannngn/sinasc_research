@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from geoalchemy2.types import Geometry
 from geopandas import GeoDataFrame
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.sql import text
 
 
 def get_tables_to_promote(engine, scope: str = "all"):
@@ -56,6 +57,15 @@ def promote_data(source_url: str, dest_url: str, use_pandas: bool = True, scope:
     """
     source_engine = create_engine(source_url)
     dest_engine = create_engine(dest_url)
+
+    def check_postgis_enabled(engine):
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*) FROM pg_extension WHERE extname = 'postgis';"))
+            if result.scalar() == 0:
+                conn.execute(text("CREATE EXTENSION postgis;"))
+                print("PostGIS extension created successfully.")
+
+    check_postgis_enabled(dest_engine)
 
     print(f"Source:      {source_engine.url.database} on {source_engine.url.host}")
     print(f"Destination: {dest_engine.url.database} on {dest_engine.url.host}")

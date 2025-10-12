@@ -2,7 +2,7 @@
 Configuration module for SINASC Dashboard.
 """
 
-from .constants import BRAZILIAN_STATES, CATEGORY_LABELS, CHART_TITLES, METRIC_NAMES, MONTH_NAMES
+from .constants import CHART_TITLES, MONTH_NAMES
 from .settings import (
     BASE_DIR,
     CHART_CONFIG,
@@ -25,9 +25,6 @@ __all__ = [
     "CHART_CONFIG",
     "CHART_HEIGHT",
     # Constants
-    "BRAZILIAN_STATES",
-    "CATEGORY_LABELS",
     "CHART_TITLES",
-    "METRIC_NAMES",
     "MONTH_NAMES",
 ]

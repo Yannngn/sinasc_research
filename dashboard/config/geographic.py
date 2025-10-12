@@ -44,7 +44,7 @@ def get_state_from_id_code(id_code: str) -> str:
     code = str(id_code).zfill(2)
     first_digits = code[:2]
 
-    states = data_loader._load_state_mapping()
+    states = data_loader.load_state_id_mapping()
     return states.get(first_digits, "Desconhecido")
 
 
@@ -71,5 +71,5 @@ def get_municipality_from_id_code(id_code: str) -> str:
     first_digits = str(id_code)[:6]
     code_norm = first_digits.zfill(6)
 
-    mapping = data_loader._load_municipality_mapping()
+    mapping = data_loader.load_municipality_id_mapping()
     return mapping.get(code_norm, "Desconhecido")

@@ -2,6 +2,6 @@
 Dashboard pages module.
 """
 
-from . import annual, geographic, home
+from . import annual, home, municipal_level, state_level
 
-__all__ = ["home", "annual", "geographic"]
+__all__ = ["home", "annual", "state_level", "municipal_level"]
